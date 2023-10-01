@@ -1,13 +1,20 @@
 # https://pypi.org/project/defusedxml/
+import io
 import mimetypes
+import re
+import uuid
 import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
-import re
 from urllib.parse import quote, urljoin
-import uuid
 
 from defusedxml.ElementTree import fromstring
+from PIL import Image
+
+IMAGE_SIZE_WIDTH = 500
+IMAGE_SIZE_HEIGHT = 500
+IMAGE_QUALITY = 70
+
 
 @dataclass
 class Publication:
@@ -19,7 +26,7 @@ class Publication:
     mimetype: str = "Unknow"
     description: str = ""
     cover_href: str = ""
-    cover_mimetype: str =""
+    cover_mimetype: str = ""
 
     def load_metadata(self, config) -> bool:
         return True
@@ -27,6 +34,7 @@ class Publication:
     def _update(self, field_name, value):
         if hasattr(self, field_name):
             setattr(self, field_name, value)
+
 
 @dataclass
 class EpubPublication(Publication):
@@ -68,7 +76,7 @@ class EpubPublication(Publication):
 
         # Get metadata and update pub
         metadata_xml = root_xml.find("pkg:metadata", namespaces=namespaces)
-        metadata_fields = ['title', 'creator', 'language', 'identifier', 'description']
+        metadata_fields = ["title", "creator", "language", "identifier", "description"]
         for f in metadata_fields:
             tmp = metadata_xml.find(f"dc:{f}", namespaces=namespaces)
             if tmp != None:
@@ -76,28 +84,43 @@ class EpubPublication(Publication):
 
         # Get cover
         manifest_xml = root_xml.find("pkg:manifest", namespaces=namespaces)
-        manifest_cover = metadata_xml.find("pkg:meta/[@name=\"cover\"]", namespaces=namespaces)
+        manifest_cover = metadata_xml.find(
+            'pkg:meta/[@name="cover"]', namespaces=namespaces
+        )
         cover_path = None
         if manifest_cover != None:
-            cover_id = manifest_cover.attrib['content']
+            cover_id = manifest_cover.attrib["content"]
             valid = re.compile(r"^[a-zA-Z._-]+$")
             if valid.match(cover_id):
-                manifest_cover_path = manifest_xml.find(f"pkg:item[@id=\"{cover_id}\"]", namespaces=namespaces)
+                manifest_cover_path = manifest_xml.find(
+                    f'pkg:item[@id="{cover_id}"]', namespaces=namespaces
+                )
                 if manifest_cover_path != None:
-                    cover_path = manifest_cover_path.attrib['href']
+                    cover_path = manifest_cover_path.attrib["href"]
                     cover_path = str(Path(root_filename).parent / Path(cover_path))
 
         if cover_path and cover_path in zip.namelist():
-            cover_dir = (config.opds_dir / "covers")
+            cover_dir = config.opds_dir / "covers"
             cover_dir.mkdir(parents=True, exist_ok=True)
             cover_data = zip.read(cover_path)
             local_cover_path = cover_dir / str(uuid.uuid4())
-            local_cover_path.write_bytes(cover_data)
+
+            try:
+                im = Image.open(io.BytesIO(cover_data))
+                if im.mode != "RGB":
+                    im = im.convert("RGB")
+                im.thumbnail((IMAGE_SIZE_WIDTH, IMAGE_SIZE_HEIGHT))
+                im.save(local_cover_path, "JPEG", quality=IMAGE_QUALITY)
+                self.cover_mimetype = "image/jpeg"
+            except OSError:
+                print(f"Can't convert cover for {self.fpath}")
+                local_cover_path.write_bytes(cover_data)
+                self.cover_mimetype = get_mimetype_by_filename(cover_path)
+
             self.cover_href = urljoin(
-                    config.opds_base_uri,
-                    quote(str(local_cover_path.relative_to(config.opds_dir))),
-                )
-            self.cover_mimetype = get_mimetype_by_filename(cover_path)
+                config.opds_base_uri,
+                quote(str(local_cover_path.relative_to(config.opds_dir))),
+            )
 
         zip.close()
 
