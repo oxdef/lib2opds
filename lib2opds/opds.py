@@ -8,7 +8,7 @@ from urllib.parse import quote, urljoin
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 
-from lib2opds.publication import get_publication, Publication
+from lib2opds.publication import Publication, get_publication
 
 env = Environment(loader=PackageLoader("lib2opds"), autoescape=select_autoescape())
 
@@ -29,13 +29,17 @@ class AtomFeed:
     filename: str = "index.xml"
 
     def export_as_xml(self, recursive=True):
-        raise NotImplementedError("AtomFeed.export_as_xml should be implement in child class")
+        raise NotImplementedError(
+            "AtomFeed.export_as_xml should be implement in child class"
+        )
+
 
 @dataclass
 class OPDSCatalogEntry:
     publication: Publication
     acquisition_link: str
     id: str = get_urn()
+
 
 @dataclass
 class NavigationFeed(AtomFeed):
@@ -107,12 +111,14 @@ def dir2odps(config, dirpath, parent=None, root=None):
         for f in filenames:
             fpath = Path(f)
             p = get_publication(fpath)
+            # TODO move to export_as_xml
             p.load_metadata(config)
-            entry = OPDSCatalogEntry(p,
+            entry = OPDSCatalogEntry(
+                p,
                 urljoin(
                     config.library_base_uri,
                     quote(str(fpath.relative_to(config.library_dir))),
-                )
+                ),
             )
             feed.entries.append(entry)
         return feed

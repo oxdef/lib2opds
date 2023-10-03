@@ -11,10 +11,6 @@ from urllib.parse import quote, urljoin
 from defusedxml.ElementTree import fromstring
 from PIL import Image
 
-IMAGE_SIZE_WIDTH = 500
-IMAGE_SIZE_HEIGHT = 500
-IMAGE_QUALITY = 70
-
 
 @dataclass
 class Publication:
@@ -109,8 +105,8 @@ class EpubPublication(Publication):
                 im = Image.open(io.BytesIO(cover_data))
                 if im.mode != "RGB":
                     im = im.convert("RGB")
-                im.thumbnail((IMAGE_SIZE_WIDTH, IMAGE_SIZE_HEIGHT))
-                im.save(local_cover_path, "JPEG", quality=IMAGE_QUALITY)
+                im.thumbnail((config.cover_width, config.cover_height))
+                im.save(local_cover_path, "JPEG", quality=config.cover_quality)
                 self.cover_mimetype = "image/jpeg"
             except OSError:
                 print(f"Can't convert cover for {self.fpath}")

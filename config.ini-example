@@ -1,0 +1,9 @@
+[General]
+library_dir =
+opds_dir =
+library_base_uri = /library/
+opds_base_uri = /opds/
+library_title = My Library
+cover_width = 500
+cover_height = 500
+cover_quality = 70
