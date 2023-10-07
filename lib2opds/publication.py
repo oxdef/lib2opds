@@ -1,4 +1,3 @@
-# https://pypi.org/project/defusedxml/
 import io
 import mimetypes
 import re
