@@ -1,7 +1,7 @@
 import os
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Self
 from urllib.parse import quote, urljoin
@@ -19,6 +19,7 @@ def get_urn():
 
 @dataclass
 class AtomFeed:
+    config: dict
     link_self_href: str
     link_start_href: str
     link_up_href: str
@@ -64,6 +65,8 @@ class AcquisitionFeed(AtomFeed):
     kind: str = "acquisition"
 
     def export_as_xml(self, recursive=False):
+        for e in self.entries:
+            e.publication.load_metadata(self.config)
         template = env.get_template("acquisition-feed.xml")
         data = template.render(feed=self)
         self.local_path.mkdir(parents=True, exist_ok=True)
@@ -86,6 +89,7 @@ def get_dir_contents(dirpath):
 
 def dir2odps(config, dirpath, parent=None, root=None):
     dpath = Path(dirpath)
+    last_updated = datetime.fromtimestamp(dpath.stat().st_mtime)
     link_self_href = urljoin(
         str(config.opds_base_uri), quote(str(dpath.relative_to(config.library_dir)))
     )
@@ -98,21 +102,26 @@ def dir2odps(config, dirpath, parent=None, root=None):
         title = dpath.name.capitalize()
     local_path = config.opds_dir / dpath.relative_to(config.library_dir)
     if dirnames:
-        feed = NavigationFeed(link_self_href, link_start_href, link_up_href, title)
+        feed = NavigationFeed(
+            config, link_self_href, link_start_href, link_up_href, title
+        )
         feed.local_path = local_path
         if not root:
             root = feed
         for d in dirnames:
-            feed.entries.append(dir2odps(config, d, feed, root))
+            f, d_updated = dir2odps(config, d, feed, root)
+            feed.entries.append(f)
+            if last_updated < d_updated:
+                last_updated = d_updated
     elif filenames:
-        feed = AcquisitionFeed(link_self_href, link_start_href, link_up_href, title)
+        feed = AcquisitionFeed(
+            config, link_self_href, link_start_href, link_up_href, title
+        )
         feed.local_path = local_path
         # TODO pagination https://specs.opds.io/opds-1.2#24-listing-acquisition-feeds
         for f in filenames:
             fpath = Path(f)
             p = get_publication(fpath)
-            # TODO move to export_as_xml
-            p.load_metadata(config)
             entry = OPDSCatalogEntry(
                 p,
                 urljoin(
@@ -121,8 +130,8 @@ def dir2odps(config, dirpath, parent=None, root=None):
                 ),
             )
             feed.entries.append(entry)
-        return feed
+        return (feed, last_updated)
     else:
         raise Exception("Mixed dir {}".format(dirpath))
 
-    return feed
+    return (feed, last_updated)

@@ -2,6 +2,7 @@ import argparse
 import configparser
 import os
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
 
 from lib2opds.opds import dir2odps
@@ -17,6 +18,7 @@ class Config:
     cover_width: int = 500
     cover_height: int = 500
     cover_quality: int = 70
+    clear_opds_dir: bool = True
 
     def load_from_file(self, config_path: Path) -> bool:
         if not config_path.exists():
@@ -30,7 +32,7 @@ class Config:
         self.library_dir = Path(config["General"].get("library_dir"))
         self.library_base_uri = config["General"].get("library_base_uri")
         self.library_title = config["General"].get("library_title")
-
+        self.clear_opds_dir = config["General"].getboolean("clear_opds_dir")
         return True
 
     def load_from_args(self, args: argparse.Namespace) -> bool:
@@ -44,10 +46,12 @@ class Config:
             self.opds_base_uri = args.opds_base_uri
         if args.library_title:
             self.library_title = args.library_title
+        if args.clear_opds_dir:
+            self.clear_opds_dir = args.clear_opds_dir
         return True
 
 
-def clean_dir(top: Path) -> bool:
+def clear_dir(top: Path) -> bool:
     if not top.is_dir():
         return False
     for root, dirs, files in os.walk(top, topdown=False):
@@ -75,8 +79,11 @@ def cli():
     parser.add_argument("--library_title", help="Lybrary title")
     parser.add_argument("-c", "--config", help="Config path", default="config.ini")
     parser.add_argument(
-        "--clean-opds-dir",
-        help="Clean OPDS directory before generating result feeds",
+        "-u", "--update", help="Force recreation of ODPS feeds", action="store_true"
+    )
+    parser.add_argument(
+        "--clear-opds-dir",
+        help="Clear OPDS directory before generating result feeds",
         action="store_true",
     )
     args = parser.parse_args()
@@ -85,9 +92,14 @@ def cli():
     config.load_from_file(Path("/etc/lib2opds.ini"))
     config.load_from_file(Path(args.config))
     config.load_from_args(args)
+    opds_updated = None
 
-    if args.clean_opds_dir:
-        clean_dir(config.opds_dir)
+    if config.opds_dir.is_dir():
+        opds_updated = datetime.fromtimestamp(config.opds_dir.stat().st_mtime)
 
-    opds_catalog = dir2odps(config, config.library_dir)
-    opds_catalog.export_as_xml()
+    opds_catalog, library_updated = dir2odps(config, config.library_dir)
+
+    if args.update or not opds_updated or opds_updated < library_updated:
+        if config.clear_opds_dir:
+            clear_dir(config.opds_dir)
+        opds_catalog.export_as_xml()

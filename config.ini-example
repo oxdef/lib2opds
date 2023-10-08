@@ -7,3 +7,4 @@ library_title = My Library
 cover_width = 500
 cover_height = 500
 cover_quality = 70
+clear_opds_dir = true

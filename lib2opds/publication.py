@@ -133,4 +133,6 @@ def get_publication(fpath: Path) -> Publication:
     if pub_mimetype == "application/epub+zip":
         return EpubPublication(fpath, pub_title)
     else:
-        return Publication(fpath, pub_title)
+        p = Publication(fpath, pub_title)
+        p.mimetype = pub_mimetype
+        return p
