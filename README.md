@@ -10,33 +10,33 @@
 ## How to use
 
 ```
-$ poetry run lib2opds -h
+$ tree ./test-library/
+./test-library/
+├── Linux
+│   └── How Linux Works - Brian Ward.epub
+└── Science Fiction
+    ├── All Systems Red.epub
+    └── I, Robot - Isaac Asimov.epub
 
-usage: lib2opds [-h] [--library-dir LIBRARY_DIR] [--opds-dir OPDS_DIR] [--library-base-uri LIBRARY_BASE_URI] [--opds-base-uri OPDS_BASE_URI]
-                [--library_title LIBRARY_TITLE] [-c CONFIG]
+$ poetry run lib2opds --opds-base-uri "/opds/" --library-base-uri "/library/" --library-dir "./test-library" --opds-dir "./output"
 
-Generate OPDS catalog for local e-book library
-
-options:
-  -h, --help            show this help message and exit
-  --library-dir LIBRARY_DIR
-                        Directory with your books
-  --opds-dir OPDS_DIR   Target directory for OPDS feeds
-  --library-base-uri LIBRARY_BASE_URI
-                        Base URI for serving books from the library, for example https://your-domain.com/library
-  --opds-base-uri OPDS_BASE_URI
-                        Base URI for OPDS, for example https://your-domain.com/opds
-  --library_title LIBRARY_TITLE
-                        Lybrary title
-  -c CONFIG, --config CONFIG
-                        Config path
+$ tree ./output/
+./output/
+├── covers
+│   ├── 607b2fca-05f3-4ec3-9f6f-d2102b30280e
+│   └── 9a3ef480-41e2-4425-a2cc-61cf5bfedda4
+├── index.xml
+├── Linux
+│   └── index.xml
+└── Science Fiction
+    └── index.xml
 ```
 
 `/etc/lib2opds.ini` is used by default and options can be overridden via command line arguments.
 
 Example of configuration file for Nginx:
 
-```
+```nginx
 location /library {
         alias /library-dir;
 }

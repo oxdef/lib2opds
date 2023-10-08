@@ -1,5 +1,6 @@
 import argparse
 import configparser
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -46,6 +47,17 @@ class Config:
         return True
 
 
+def clean_dir(top: Path) -> bool:
+    if not top.is_dir():
+        return False
+    for root, dirs, files in os.walk(top, topdown=False):
+        for name in files:
+            (Path(root) / name).unlink()
+        for name in dirs:
+            (Path(root) / name).rmdir()
+    return True
+
+
 def cli():
     parser = argparse.ArgumentParser(
         description="Generate OPDS catalog for local e-book library"
@@ -62,12 +74,20 @@ def cli():
     )
     parser.add_argument("--library_title", help="Lybrary title")
     parser.add_argument("-c", "--config", help="Config path", default="config.ini")
-
+    parser.add_argument(
+        "--clean-opds-dir",
+        help="Clean OPDS directory before generating result feeds",
+        action="store_true",
+    )
     args = parser.parse_args()
 
     config = Config()
     config.load_from_file(Path("/etc/lib2opds.ini"))
     config.load_from_file(Path(args.config))
     config.load_from_args(args)
+
+    if args.clean_opds_dir:
+        clean_dir(config.opds_dir)
+
     opds_catalog = dir2odps(config, config.library_dir)
     opds_catalog.export_as_xml()
