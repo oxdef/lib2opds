@@ -1,3 +1,4 @@
+import configparser
 import io
 import mimetypes
 import re
@@ -15,7 +16,7 @@ from PIL import Image
 class Publication:
     fpath: Path
     title: str
-    creator: str = "Unknow"
+    authors: list[str] = field(default_factory=list)
     language: str = "Unknow"
     identifier: str = "Unknow"
     mimetype: str = "Unknow"
@@ -23,8 +24,22 @@ class Publication:
     cover_href: str = ""
     cover_mimetype: str = ""
 
-    def load_metadata(self, config) -> bool:
+    def _load_metadata(self, config) -> bool:
         return True
+
+    def load_metadata(self, config) -> bool:
+        info_fpath = self.fpath.with_suffix(".ini")
+        if info_fpath.is_file():
+            info = configparser.ConfigParser()
+            info.read(info_fpath)
+            self.authors = [
+                i.strip() for i in info["Publication"].get("authors", "").split(",")
+            ]
+            self.title = info["Publication"].get("title", "")
+            self.description = info["Publication"].get("description", "")
+            return True
+        else:
+            return self._load_metadata(config)
 
     def _update(self, field_name, value):
         if hasattr(self, field_name):
@@ -35,7 +50,7 @@ class Publication:
 class EpubPublication(Publication):
     mimetype: str = "application/epub+zip"
 
-    def load_metadata(self, config) -> bool:
+    def _load_metadata(self, config) -> bool:
         namespaces = {
             "cont": "urn:oasis:names:tc:opendocument:xmlns:container",
             "dc": "http://purl.org/dc/elements/1.1/",
@@ -71,12 +86,20 @@ class EpubPublication(Publication):
 
         # Get metadata and update pub
         metadata_xml = root_xml.find("pkg:metadata", namespaces=namespaces)
-        metadata_fields = ["title", "creator", "language", "identifier", "description"]
+        metadata_fields = {
+            "title": "title",
+            "language": "language",
+            "identifier": "identifier",
+            "description": "description",
+        }
         for f in metadata_fields:
             tmp = metadata_xml.find(f"dc:{f}", namespaces=namespaces)
             if tmp != None:
-                self._update(f, tmp.text)
-
+                self._update(metadata_fields[f], tmp.text)
+        # Multiple authors
+        creators = metadata_xml.findall(f"dc:creator", namespaces=namespaces)
+        for c in creators:
+            self.authors.append(c.text)
         # Get cover
         manifest_xml = root_xml.find("pkg:manifest", namespaces=namespaces)
         manifest_cover = metadata_xml.find(
@@ -107,32 +130,37 @@ class EpubPublication(Publication):
                 im.thumbnail((config.cover_width, config.cover_height))
                 im.save(local_cover_path, "JPEG", quality=config.cover_quality)
                 self.cover_mimetype = "image/jpeg"
+                self.cover_href = urljoin(
+                    config.opds_base_uri,
+                    quote(str(local_cover_path.relative_to(config.opds_dir))),
+                )
             except OSError:
                 print(f"Can't convert cover for {self.fpath}")
-                local_cover_path.write_bytes(cover_data)
-                self.cover_mimetype = get_mimetype_by_filename(cover_path)
-
-            self.cover_href = urljoin(
-                config.opds_base_uri,
-                quote(str(local_cover_path.relative_to(config.opds_dir))),
-            )
 
         zip.close()
 
         return True
 
 
-def get_mimetype_by_filename(fpath: Path) -> str:
+def get_mimetype_by_filename(fpath: Path) -> str | None:
     (pub_mimetype, pub_encoding) = mimetypes.guess_type(fpath)
-    return pub_mimetype if pub_mimetype else "Unknow"
+    return pub_mimetype if pub_mimetype else None
 
 
-def get_publication(fpath: Path) -> Publication:
+def get_title_by_filename(fpath: Path) -> str:
+    return str(fpath.stem.replace("_", " ").capitalize())
+
+
+def get_publication(fpath: Path) -> Publication | None:
     pub_mimetype = get_mimetype_by_filename(fpath)
-    pub_title = str(fpath.name.capitalize())
+    if not pub_mimetype:
+        return None
+    pub_title = get_title_by_filename(fpath)
     if pub_mimetype == "application/epub+zip":
         return EpubPublication(fpath, pub_title)
-    else:
+    elif fpath.suffix != ".ini":
         p = Publication(fpath, pub_title)
         p.mimetype = pub_mimetype
         return p
+    else:
+        return None

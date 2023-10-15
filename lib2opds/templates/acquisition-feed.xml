@@ -12,14 +12,16 @@
     <name>lib2opds generator</name>
     <uri>http://opds-spec.org</uri>
   </author>
-  {% for entry in feed.entries %}
+  {% for entry in feed.entries  | sort(attribute="publication.title") %}
   <entry>
     <title>{{ entry.publication.title }}</title>
     <id>{{ entry.id }}</id>
     <updated>{{ feed.updated }}</updated>
+    {% for author in entry.publication.authors %}
     <author>
-      <name>{{ entry.publication.creator }}</name>
+      <name>{{ author }}</name>
     </author>
+    {% endfor %}
     {% if entry.publication.description %}
     <content type="text">{{ entry.publication.description }}</content>
     {% endif %}

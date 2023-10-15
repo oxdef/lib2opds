@@ -122,14 +122,15 @@ def dir2odps(config, dirpath, parent=None, root=None):
         for f in filenames:
             fpath = Path(f)
             p = get_publication(fpath)
-            entry = OPDSCatalogEntry(
-                p,
-                urljoin(
-                    config.library_base_uri,
-                    quote(str(fpath.relative_to(config.library_dir))),
-                ),
-            )
-            feed.entries.append(entry)
+            if p:
+                entry = OPDSCatalogEntry(
+                    p,
+                    urljoin(
+                        config.library_base_uri,
+                        quote(str(fpath.relative_to(config.library_dir))),
+                    ),
+                )
+                feed.entries.append(entry)
         return (feed, last_updated)
     else:
         raise Exception("Mixed dir {}".format(dirpath))

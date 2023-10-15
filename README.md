@@ -1,6 +1,14 @@
 # Lib2OPDS
 
-`lib2opds` generates OPDS catalog for local e-book library so it can be hosted utilizing web server. Currently meta data extraction is supported only for ePUB format.
+`lib2opds` generates [OPDS](https://opds.io/) ([version 1.2](https://specs.opds.io/opds-1.2)) catalog for local e-book library so it can be hosted utilizing web server. Currently meta data extraction is supported only for ePUB format.
+
+## Features
+
+- Directory hierarchy support
+- ePUB format: metadata extraction, thumbnail generation
+- "Lazy" updating of feeds. `lib2opds` re-generates feeds only when new files are added into the library
+- Sidecar files for metadata extraction
+- Global and local configuration files as well as command line options
 
 ## How to install
 
@@ -54,3 +62,8 @@ location /opds/covers {
 ```
 
 Library location here is not protected with basic auth because of the bug in some e-book reader software.
+
+## Tested devices and applications
+
+* PocketBook devices
+* KyBook 3 EBook Reader

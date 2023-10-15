@@ -11,12 +11,12 @@
     <name>lib2opds generator</name>
     <uri>http://opds-spec.org</uri>
   </author>
-  {% for entry in feed.entries %}
+  {% for entry in feed.entries | sort(attribute="title") %}
   <entry>
     <title>{{ entry.title }}</title>
     <link rel="subsection" href="{{ entry.link_self_href }}" type="application/atom+xml;profile=opds-catalog;kind={{ entry.kind }}"/>
-    <updated>{{ feed.updated }}</updated>
-    <id>{{ feed.id }}</id>
+    <updated>{{ entry.updated }}</updated>
+    <id>{{ entry.id }}</id>
   </entry>
   {% endfor %}
 </feed>
