@@ -10,6 +10,13 @@ from urllib.parse import quote, urljoin
 
 from defusedxml.ElementTree import fromstring
 from PIL import Image
+from PyPDF2 import PdfReader
+
+from lib2opds.config import Config
+
+
+def get_urn():
+    return uuid.uuid4().urn
 
 
 @dataclass
@@ -17,14 +24,32 @@ class Publication:
     fpath: Path
     title: str
     authors: list[str] = field(default_factory=list)
-    language: str = "Unknow"
-    identifier: str = "Unknow"
+    language: str = ""
+    identifier: str = ""
     mimetype: str = "Unknow"
     description: str = ""
     cover_href: str = ""
     cover_mimetype: str = ""
+    cover_data: Image = None
+    acquisition_link: str = ""
+    id: str = get_urn()
+    issued: str = ""
+    publisher: str = ""
 
     def _load_metadata(self, config) -> bool:
+        return True
+
+    def save_cover(self, config) -> True:
+        if not self.cover_data:
+            return False
+        cover_dir = config.opds_dir / "covers"
+        cover_dir.mkdir(parents=True, exist_ok=True)
+        local_cover_path = cover_dir / str(uuid.uuid4())
+        self.cover_data.save(local_cover_path, "JPEG", quality=config.cover_quality)
+        self.cover_href = urljoin(
+            config.opds_base_uri,
+            quote(str(local_cover_path.relative_to(config.opds_dir))),
+        )
         return True
 
     def load_metadata(self, config) -> bool:
@@ -91,6 +116,9 @@ class EpubPublication(Publication):
             "language": "language",
             "identifier": "identifier",
             "description": "description",
+            "date": "issued",
+            "publisher": "publisher",
+            "rights": "rights",
         }
         for f in metadata_fields:
             tmp = metadata_xml.find(f"dc:{f}", namespaces=namespaces)
@@ -118,26 +146,53 @@ class EpubPublication(Publication):
                     cover_path = str(Path(root_filename).parent / Path(cover_path))
 
         if cover_path and cover_path in zip.namelist():
-            cover_dir = config.opds_dir / "covers"
-            cover_dir.mkdir(parents=True, exist_ok=True)
             cover_data = zip.read(cover_path)
-            local_cover_path = cover_dir / str(uuid.uuid4())
-
             try:
                 im = Image.open(io.BytesIO(cover_data))
                 if im.mode != "RGB":
                     im = im.convert("RGB")
                 im.thumbnail((config.cover_width, config.cover_height))
-                im.save(local_cover_path, "JPEG", quality=config.cover_quality)
+                self.cover_data = im
                 self.cover_mimetype = "image/jpeg"
-                self.cover_href = urljoin(
-                    config.opds_base_uri,
-                    quote(str(local_cover_path.relative_to(config.opds_dir))),
-                )
             except OSError:
                 print(f"Can't convert cover for {self.fpath}")
 
         zip.close()
+
+        return True
+
+
+@dataclass
+class PdfPublication(Publication):
+    mimetype: str = "application/pdf"
+
+    def _load_metadata(self, config) -> bool:
+        try:
+            reader = PdfReader(self.fpath)
+            meta = reader.metadata
+        except:
+            return False
+        if meta.author:
+            self.authors.append(str(meta.author))
+        if meta.title:
+            self.title = str(meta.title)
+        try:
+            page = reader.pages[0]
+            images = page.images
+        except:
+            print(f"Can't convert cover for {self.fpath}")
+            return False
+        if images:
+            try:
+                im = Image.open(io.BytesIO(images[0].data))
+                if im.mode != "RGB":
+                    im = im.convert("RGB")
+                im.thumbnail((config.cover_width, config.cover_height))
+                self.cover_data = im
+                self.cover_mimetype = "image/jpeg"
+            except OSError:
+                print(f"Can't convert cover for {self.fpath}")
+                return False
 
         return True
 
@@ -151,16 +206,21 @@ def get_title_by_filename(fpath: Path) -> str:
     return str(fpath.stem.replace("_", " ").capitalize())
 
 
-def get_publication(fpath: Path) -> Publication | None:
+def get_publication(fpath: Path, config: Config) -> Publication | None:
     pub_mimetype = get_mimetype_by_filename(fpath)
     if not pub_mimetype:
         return None
     pub_title = get_title_by_filename(fpath)
     if pub_mimetype == "application/epub+zip":
-        return EpubPublication(fpath, pub_title)
+        p = EpubPublication(fpath, pub_title)
+    elif pub_mimetype == "application/pdf":
+        p = PdfPublication(fpath, pub_title)
     elif fpath.suffix != ".ini":
         p = Publication(fpath, pub_title)
         p.mimetype = pub_mimetype
-        return p
     else:
         return None
+    p.acquisition_link = urljoin(
+        config.library_base_uri, quote(str(fpath.relative_to(config.library_dir)))
+    )
+    return p

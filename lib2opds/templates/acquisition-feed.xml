@@ -5,30 +5,49 @@
   <link rel="start" href="{{ feed.link_start_href }}" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
   <link rel="up" href="{{ feed.link_up_href }}" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
 
-  <title>{{ feed.title }}</title>
+  <title>{{ feed.get_title() }}</title>
   <updated>{{ feed.updated }}</updated>
 
   <author>
     <name>lib2opds generator</name>
     <uri>http://opds-spec.org</uri>
   </author>
-  {% for entry in feed.entries  | sort(attribute="publication.title") %}
+  {% for publication in feed.entries  | sort(attribute="title") %}
   <entry>
-    <title>{{ entry.publication.title }}</title>
-    <id>{{ entry.id }}</id>
+    <title>{{ publication.title }}</title>
+    <id>{{ publication.id }}</id>
     <updated>{{ feed.updated }}</updated>
-    {% for author in entry.publication.authors %}
+    {% for author in publication.authors %}
     <author>
       <name>{{ author }}</name>
     </author>
     {% endfor %}
-    {% if entry.publication.description %}
-    <content type="text">{{ entry.publication.description }}</content>
+    {% if publication.identifier %}
+    <dc:identifier>{{ publication.identifier }}</dc:identifier>
     {% endif %}
-    {% if entry.publication.cover_href %}
-    <link rel="http://opds-spec.org/image" href="{{ entry.publication.cover_href }}" type="{{ entry.publication.cover_mimetype }}"/>
+    {% if publication.language %}
+    <dc:language>{{ publication.language }}</dc:language>
     {% endif %}
-    <link rel="http://opds-spec.org/acquisition" href="{{ entry.acquisition_link }}" type="{{ entry.publication.mimetype }}"/>
+
+    {% if publication.publisher %}
+    <dc:publisher>{{ publication.publisher }}</dc:publisher>
+    {% endif %}
+
+    {% if publication.issued %}
+    <dc:issued>{{ publication.issued }}</dc:issued>
+    {% endif %}
+
+    {% if publication.rights %}
+    <rights>{{ publication.rights }}</rights>
+    {% endif %}
+
+    {% if publication.description %}
+    <content type="text">{{ publication.description }}</content>
+    {% endif %}
+    {% if publication.cover_href %}
+    <link rel="http://opds-spec.org/image" href="{{ publication.cover_href }}" type="{{ publication.cover_mimetype }}"/>
+    {% endif %}
+    <link rel="http://opds-spec.org/acquisition" href="{{ publication.acquisition_link }}" type="{{ publication.mimetype }}"/>
  </entry>
   {% endfor %}
 </feed>

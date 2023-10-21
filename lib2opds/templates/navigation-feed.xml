@@ -5,7 +5,7 @@
   <link rel="start" href="{{ feed.link_start_href }}" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
   <link rel="up" href="{{ feed.link_up_href }}" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
 
-  <title>{{ feed.title }}</title>
+  <title>{{ feed.get_title() }}</title>
   <updated>{{ feed.updated }}</updated>
   <author>
     <name>lib2opds generator</name>
@@ -13,7 +13,7 @@
   </author>
   {% for entry in feed.entries | sort(attribute="title") %}
   <entry>
-    <title>{{ entry.title }}</title>
+    <title>{{ entry.get_title() }}</title>
     <link rel="subsection" href="{{ entry.link_self_href }}" type="application/atom+xml;profile=opds-catalog;kind={{ entry.kind }}"/>
     <updated>{{ entry.updated }}</updated>
     <id>{{ entry.id }}</id>

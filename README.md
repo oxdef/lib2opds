@@ -5,7 +5,9 @@
 ## Features
 
 - Directory hierarchy support
+- Virtual directories: new books, authors, etc.
 - ePUB format: metadata extraction, thumbnail generation
+- PDF format: metadata extraction, thumbnail generation
 - "Lazy" updating of feeds. `lib2opds` re-generates feeds only when new files are added into the library
 - Sidecar files for metadata extraction
 - Global and local configuration files as well as command line options
@@ -30,14 +32,16 @@ $ poetry run lib2opds --opds-base-uri "/opds/" --library-base-uri "/library/" --
 
 $ tree ./output/
 ./output/
+
 ├── covers
-│   ├── 607b2fca-05f3-4ec3-9f6f-d2102b30280e
-│   └── 9a3ef480-41e2-4425-a2cc-61cf5bfedda4
-├── index.xml
-├── Linux
-│   └── index.xml
-└── Science Fiction
-    └── index.xml
+│   ├── 03e1b3fe-66b2-43eb-b9f1-da72813419e2
+│   ├── 14cdd72c-680c-491c-a017-ddd0d2dbb1d2
+│   └── e01dab66-3f78-402a-9ac8-83ebc6b24f11
+├── feeds
+│   ├── 101bcb13-37bf-4e13-a543-22c5ff3567d3.xml
+│   ├── 127ae484-af53-4056-9cff-517984321e26.xml
+│   └── db1d5760-72f5-4f23-af42-d9d6406207c9.xml
+└── index.xml
 ```
 
 `/etc/lib2opds.ini` is used by default and options can be overridden via command line arguments.
