@@ -13,7 +13,11 @@
   </author>
   {% for entry in feed.entries | sort(attribute="title") %}
   <entry>
+    {% if entry.kind == "acquisition" %}
+    <title>{{ entry.get_title() }} ({{ entry.entries | count }})</title>
+    {% else %}
     <title>{{ entry.get_title() }}</title>
+    {% endif %}
     <link rel="subsection" href="{{ entry.link_self_href }}" type="application/atom+xml;profile=opds-catalog;kind={{ entry.kind }}"/>
     <updated>{{ entry.updated }}</updated>
     <id>{{ entry.id }}</id>
