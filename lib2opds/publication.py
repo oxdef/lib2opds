@@ -10,7 +10,7 @@ from urllib.parse import quote, urljoin
 
 from defusedxml.ElementTree import fromstring
 from PIL import Image
-from PyPDF2 import PdfReader
+from pypdf import PdfReader
 
 from lib2opds.config import Config
 
