@@ -30,7 +30,7 @@ class Publication:
     description: str = ""
     cover_href: str = ""
     cover_mimetype: str = ""
-    cover_data: Image = None
+    cover: Image = None
     acquisition_link: str = ""
     id: str = get_urn()
     issued: str = ""
@@ -40,31 +40,53 @@ class Publication:
         return True
 
     def save_cover(self, config) -> True:
-        if not self.cover_data:
+        if not self.cover:
             return False
         cover_dir = config.opds_dir / "covers"
         cover_dir.mkdir(parents=True, exist_ok=True)
         local_cover_path = cover_dir / str(uuid.uuid4())
-        self.cover_data.save(local_cover_path, "JPEG", quality=config.cover_quality)
+        self.cover.save(local_cover_path, "JPEG", quality=config.cover_quality)
         self.cover_href = urljoin(
             config.opds_base_uri,
             quote(str(local_cover_path.relative_to(config.opds_dir))),
         )
         return True
 
+    def load_cover(self, config) -> bool:
+        cover_fpath = self.fpath.with_suffix(".cover")
+        if cover_fpath.is_file():
+            try:
+                im = Image.open(cover_fpath)
+                if im.mode != "RGB":
+                    im = im.convert("RGB")
+                im.thumbnail((config.cover_width, config.cover_height))
+                self.cover = im
+                self.cover_mimetype = "image/jpeg"
+            except OSError:
+                print(f"Can't convert cover for {self.fpath}")
+                return False
+        return True
+
     def load_metadata(self, config) -> bool:
-        info_fpath = self.fpath.with_suffix(".ini")
+        self._load_metadata(config)
+
+        info_fpath = self.fpath.with_suffix(".info")
         if info_fpath.is_file():
             info = configparser.ConfigParser()
             info.read(info_fpath)
             self.authors = [
-                i.strip() for i in info["Publication"].get("authors", "").split(",")
+                i.strip()
+                for i in info["Publication"].get("authors", "").split(",")
+                if i.strip()
             ]
             self.title = info["Publication"].get("title", "")
             self.description = info["Publication"].get("description", "")
-            return True
-        else:
-            return self._load_metadata(config)
+
+        cover_fpath = self.fpath.with_suffix(".cover")
+        if cover_fpath.is_file():
+            self.load_cover(config)
+
+        return True
 
     def _update(self, field_name, value):
         if hasattr(self, field_name):
@@ -133,6 +155,10 @@ class EpubPublication(Publication):
         manifest_cover = metadata_xml.find(
             'pkg:meta/[@name="cover"]', namespaces=namespaces
         )
+
+        if self.cover:
+            return True
+
         cover_path = None
         if manifest_cover != None:
             cover_id = manifest_cover.attrib["content"]
@@ -152,7 +178,7 @@ class EpubPublication(Publication):
                 if im.mode != "RGB":
                     im = im.convert("RGB")
                 im.thumbnail((config.cover_width, config.cover_height))
-                self.cover_data = im
+                self.cover = im
                 self.cover_mimetype = "image/jpeg"
             except OSError:
                 print(f"Can't convert cover for {self.fpath}")
@@ -172,25 +198,31 @@ class PdfPublication(Publication):
             meta = reader.metadata
         except:
             return False
+
         if meta.author:
-            self.authors.append(str(meta.author))
+            self._update("authors", [str(meta.author)])
+
         if meta.title:
-            self.title = str(meta.title)
+            self._update("title", str(meta.title))
+
+        if self.cover:
+            return True
+
         try:
             page = reader.pages[0]
             images = page.images
         except:
             print(f"Can't convert cover for {self.fpath}")
             return False
-        if images:
+        if len(images) > 0:
             try:
                 im = Image.open(io.BytesIO(images[0].data))
                 if im.mode != "RGB":
                     im = im.convert("RGB")
                 im.thumbnail((config.cover_width, config.cover_height))
-                self.cover_data = im
+                self.cover = im
                 self.cover_mimetype = "image/jpeg"
-            except OSError:
+            except:
                 print(f"Can't convert cover for {self.fpath}")
                 return False
 
@@ -208,6 +240,7 @@ def get_title_by_filename(fpath: Path) -> str:
 
 def get_publication(fpath: Path, config: Config) -> Publication | None:
     pub_mimetype = get_mimetype_by_filename(fpath)
+    metadata_suffixes = [".info", ".cover"]
     if not pub_mimetype:
         return None
     pub_title = get_title_by_filename(fpath)
@@ -215,7 +248,7 @@ def get_publication(fpath: Path, config: Config) -> Publication | None:
         p = EpubPublication(fpath, pub_title)
     elif pub_mimetype == "application/pdf":
         p = PdfPublication(fpath, pub_title)
-    elif fpath.suffix != ".ini":
+    elif fpath.suffix not in metadata_suffixes:
         p = Publication(fpath, pub_title)
         p.mimetype = pub_mimetype
     else:
