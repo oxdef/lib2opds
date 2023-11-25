@@ -18,6 +18,11 @@ class Config:
     clear_opds_dir: bool = True
     feeds_dir: Path = field(default_factory=Path)
     publication_freshness_days = 14
+    root_filename: str = "index.xml"
+    feed_by_directory_title: str = "Folders"
+    feed_new_publications_title: str = "New Books"
+    feed_all_publications_title: str = "All Books"
+    feed_by_author_title: str = "Authors"
 
     def load_from_file(self, config_path: Path) -> bool:
         if not config_path.exists():
@@ -35,6 +40,7 @@ class Config:
         self.publication_freshness_days = config["General"].getint(
             "publication_freshness_days", 14
         )
+        self.root_filename = config["General"].get("root_filename")
 
         return True
 

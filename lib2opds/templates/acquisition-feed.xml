@@ -12,7 +12,7 @@
     <name>lib2opds generator</name>
     <uri>http://opds-spec.org</uri>
   </author>
-  {% for publication in feed.entries  | sort(attribute="title") %}
+  {% for publication in feed.publications  | sort(attribute="title") %}
   <entry>
     <title>{{ publication.title }}</title>
     <id>{{ publication.id }}</id>

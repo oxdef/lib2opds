@@ -29,7 +29,7 @@ def get_utime_dir(dpath: Path) -> datetime:
     return updated
 
 
-def cli():
+def cli() -> None:
     parser = argparse.ArgumentParser(
         description="Generate OPDS catalog for local e-book library"
     )

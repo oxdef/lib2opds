@@ -3,6 +3,7 @@ library_dir =
 opds_dir =
 library_base_uri = /library/
 opds_base_uri = /opds/
+root_filename = index.xml
 library_title = My Library
 cover_width = 500
 cover_height = 500
