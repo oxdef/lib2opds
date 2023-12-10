@@ -14,8 +14,11 @@
 
 ## How to install
 
-1. Clone the repository
-2. Run `poetry install`
+`lib2opds` is distributed on PyPI. The best way to install it is with [pipx](https://pipx.pypa.io).
+
+```
+pipx install lib2opds
+```
 
 ## How to use
 
@@ -28,7 +31,7 @@ $ tree ./test-library/
     ├── All Systems Red.epub
     └── I, Robot - Isaac Asimov.epub
 
-$ poetry run lib2opds --opds-base-uri "/opds/" --library-base-uri "/library/" --library-dir "./test-library" --opds-dir "./output"
+$ lib2opds --opds-base-uri "/opds/" --library-base-uri "/library/" --library-dir "./test-library" --opds-dir "./output"
 
 $ tree ./output/
 ./output/
