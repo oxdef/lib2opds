@@ -71,10 +71,8 @@ def dir2odps(
         # TODO pagination https://specs.opds.io/opds-1.2#24-listing-acquisition-feeds
         for f in filenames:
             fpath = Path(f)
-            p = get_publication(fpath, config)
-            if p:
-                p.load_metadata(config)
-                p.save_cover(config)
+            if p := get_publication(fpath, config):
+                p.load_metadata()
                 feed.publications.append(p)
         return feed
     else:

@@ -4,7 +4,9 @@ __pycache__/
 *$py.class
 
 output/
+cache/
 config.ini
+Session.vim
 
 # C extensions
 *.so
