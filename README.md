@@ -11,6 +11,7 @@
 - "Lazy" updating of feeds. `lib2opds` re-generates feeds only when new files are added into the library
 - Sidecar files for metadata extraction
 - Global and local configuration files as well as command line options
+- Caching for better processing of libraries with many books
 
 ## How to install
 
