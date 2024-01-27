@@ -1,4 +1,4 @@
-import configparser
+import hashlib
 import io
 import mimetypes
 import re
@@ -15,14 +15,17 @@ from defusedxml.ElementTree import fromstring
 from PIL import Image
 
 from lib2opds.config import Config
-
-
-def get_urn() -> str:
-    return uuid.uuid4().urn
+from lib2opds.sidecars import (
+    CoverSidecarFile,
+    MetadataSidecarFile,
+    get_cover_sidecar_file,
+    get_metadata_sidecar_file,
+)
 
 
 @dataclass
 class Publication:
+    config: Config
     fpath: Path
     title: str
     authors: list[str] = field(default_factory=list)
@@ -34,60 +37,110 @@ class Publication:
     cover_mimetype: str = ""
     cover: Image.Image | None = None
     acquisition_link: str = ""
-    id: str = get_urn()
+    id: str = ""
     issued: str = ""
     publisher: str = ""
+    cover_filename: str = ""
 
-    def _load_metadata(self, config: Config) -> bool:
+    def __post_init__(self) -> None:
+        self.id = uuid.uuid4().urn
+        self.cover_filename = str(uuid.uuid4())
+
+    def _load_metadata(self) -> bool:
         return True
 
-    def save_cover(self, config: Config) -> bool:
+    def _get_cache_path(self) -> Path | None:
+        if self.config.cache_dir and self.config.cache_dir.exists():
+            return (
+                self.config.cache_dir
+                / hashlib.md5(bytes(self.fpath)).hexdigest()  # nosec B324
+            )
+        else:
+            return None
+
+    def _save_cover(self) -> bool:
         if not self.cover:
             return False
-        cover_dir: Path = config.opds_dir / "covers"
+        cover_dir: Path = self.config.opds_dir / "covers"
         cover_dir.mkdir(parents=True, exist_ok=True)
-        local_cover_path: Path = cover_dir / str(uuid.uuid4())
-        self.cover.save(local_cover_path, "JPEG", quality=config.cover_quality)
+        local_cover_path: Path = cover_dir / self.cover_filename
+        self.cover.save(local_cover_path, "JPEG", quality=self.config.cover_quality)
         self.cover_href = urljoin(
-            config.opds_base_uri,
-            quote(str(local_cover_path.relative_to(config.opds_dir))),
+            self.config.opds_base_uri,
+            quote(str(local_cover_path.relative_to(self.config.opds_dir))),
         )
         return True
 
-    def load_cover(self, config: Config) -> bool:
-        cover_fpath: Path = self.fpath.with_suffix(".cover")
-        if cover_fpath.is_file():
-            try:
-                im: Image.Image = Image.open(cover_fpath)
-                if im.mode != "RGB":
-                    im = im.convert("RGB")
-                im.thumbnail((config.cover_width, config.cover_height))
-                self.cover = im
-                self.cover_mimetype = "image/jpeg"
-            except OSError:
-                print(f"Can't convert cover for {self.fpath}")
-                return False
+    def _load_cover_from_sidecar_file(self, sidecar: CoverSidecarFile) -> bool:
+        if not sidecar.read():
+            return False
+        self.cover = sidecar.cover
+        self.cover_mimetype = sidecar.cover_mimetype
         return True
 
-    def load_metadata(self, config: Config) -> bool:
-        self._load_metadata(config)
+    def _load_metadata_from_sidecar_file(self, sidecar: MetadataSidecarFile) -> bool:
+        if not sidecar.read():
+            return False
+        self.authors = sidecar.authors
+        self.title = sidecar.title
+        self.description = sidecar.description
+        return True
 
-        info_fpath: Path = self.fpath.with_suffix(".info")
-        if info_fpath.is_file():
-            info: configparser.ConfigParser = configparser.ConfigParser()
-            info.read(info_fpath)
-            self.authors = [
-                i.strip()
-                for i in info["Publication"].get("authors", "").split(",")
-                if i.strip()
-            ]
-            self.title = info["Publication"].get("title", "")
-            self.description = info["Publication"].get("description", "")
+    def _save_cover_to_sidecar_file(self, sidecar: CoverSidecarFile) -> bool:
+        sidecar.cover = self.cover
+        sidecar.cover_mimetype = self.cover_mimetype
+        return sidecar.write()
 
-        cover_fpath: Path = self.fpath.with_suffix(".cover")
-        if cover_fpath.is_file():
-            self.load_cover(config)
+    def _save_metadata_to_sidecar_file(self, sidecar: MetadataSidecarFile) -> bool:
+        sidecar.authors = self.authors
+        sidecar.title = self.title
+        sidecar.description = self.description
+        return sidecar.write()
 
+    def _load_metadata_from_cache(self) -> bool:
+        if cache_fpath := self._get_cache_path():
+            return self._load_metadata_from_sidecar_files(cache_fpath)
+        return False
+
+    def _save_metadata_to_cache(self) -> bool:
+        if cache_fpath := self._get_cache_path():
+            return self._save_metadata_to_sidecar_files(cache_fpath)
+        return False
+
+    def _load_metadata_from_sidecar_files(self, fpath: Path) -> bool:
+        if not self._load_metadata_from_sidecar_file(get_metadata_sidecar_file(fpath)):
+            return False
+        self._load_cover_from_sidecar_file(
+            get_cover_sidecar_file(
+                fpath,
+                self.config.cover_width,
+                self.config.cover_height,
+                self.config.cover_quality,
+            )
+        )
+        return True
+
+    def _save_metadata_to_sidecar_files(self, fpath: Path) -> bool:
+        if not self._save_metadata_to_sidecar_file(get_metadata_sidecar_file(fpath)):
+            return False
+        self._save_cover_to_sidecar_file(
+            get_cover_sidecar_file(
+                fpath,
+                self.config.cover_width,
+                self.config.cover_height,
+                self.config.cover_quality,
+            )
+        )
+        return True
+
+    def load_metadata(self) -> bool:
+        if not self._load_metadata_from_cache():
+            self._load_metadata()
+        else:
+            return True
+        self._load_metadata_from_sidecar_files(self.fpath)
+        self._save_cover()  # To have persistent path to the cover for XML output
+        self._save_metadata_to_cache()
         return True
 
     def _update(self, field_name: str, value: Any) -> None:
@@ -99,7 +152,7 @@ class Publication:
 class EpubPublication(Publication):
     mimetype: str = "application/epub+zip"
 
-    def _load_metadata(self, config: Config) -> bool:
+    def _load_metadata(self) -> bool:
         namespaces: dict[str, str] = {
             "cont": "urn:oasis:names:tc:opendocument:xmlns:container",
             "dc": "http://purl.org/dc/elements/1.1/",
@@ -205,7 +258,7 @@ class EpubPublication(Publication):
                 im: Image.Image = Image.open(io.BytesIO(cover_data))
                 if im.mode != "RGB":
                     im = im.convert("RGB")
-                im.thumbnail((config.cover_width, config.cover_height))
+                im.thumbnail((self.config.cover_width, self.config.cover_height))
                 self.cover = im
                 self.cover_mimetype = "image/jpeg"
             except OSError:
@@ -220,7 +273,7 @@ class EpubPublication(Publication):
 class PdfPublication(Publication):
     mimetype: str = "application/pdf"
 
-    def _load_metadata(self, config: Config) -> bool:
+    def _load_metadata(self) -> bool:
         try:
             reader: pypdf.PdfReader = pypdf.PdfReader(self.fpath)
             meta: pypdf.DocumentInformation | None = reader.metadata
@@ -248,7 +301,7 @@ class PdfPublication(Publication):
                 im: Image.Image = Image.open(io.BytesIO(images[0].data))
                 if im.mode != "RGB":
                     im = im.convert("RGB")
-                im.thumbnail((config.cover_width, config.cover_height))
+                im.thumbnail((self.config.cover_width, self.config.cover_height))
                 self.cover = im
                 self.cover_mimetype = "image/jpeg"
             except:
@@ -278,11 +331,11 @@ def get_publication(fpath: Path, config: Config) -> Publication | None:
     p: Publication | None = None
 
     if pub_mimetype == "application/epub+zip":
-        p = EpubPublication(fpath, pub_title)
+        p = EpubPublication(config, fpath, pub_title)
     elif pub_mimetype == "application/pdf":
-        p = PdfPublication(fpath, pub_title)
+        p = PdfPublication(config, fpath, pub_title)
     elif fpath.suffix not in metadata_suffixes:
-        p = Publication(fpath, pub_title)
+        p = Publication(config, fpath, pub_title)
         p.mimetype = pub_mimetype
     else:
         return None

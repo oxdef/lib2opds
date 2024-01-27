@@ -53,6 +53,8 @@ def cli() -> None:
         help="Clear OPDS directory before generating result feeds",
         action="store_true",
     )
+    parser.add_argument("--cache-dir", help="Directory for caching ebook metadata")
+
     args = parser.parse_args()
 
     config = Config()
@@ -69,5 +71,7 @@ def cli() -> None:
     if args.update or not opds_updated or opds_updated < library_updated:
         if config.clear_opds_dir:
             clear_dir(config.opds_dir)
+            if config.cache_dir is not None:
+                clear_dir(config.cache_dir)
         opds_catalog = lib2odps(config, config.library_dir)
         opds_catalog.export_as_xml()
