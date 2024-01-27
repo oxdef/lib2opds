@@ -45,7 +45,8 @@ def dir2odps(
     )
 
     feed: AtomFeed
-    if dirnames:
+    # Directory contains other directories or empty
+    if len(dirnames) > 0 or (len(dirnames) + len(filenames) == 0):
         feed = NavigationFeed(
             config,
             link_self_href,
@@ -59,7 +60,7 @@ def dir2odps(
                 config, Path(d), feed, root
             )
             feed.entries.append(dir_feed)
-    elif filenames:
+    elif len(filenames) > 0:
         feed = AcquisitionFeed(
             config,
             link_self_href,
