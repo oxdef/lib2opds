@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lib2opds"
-version = "0.1.0"
+version = "0.1.1"
 description = "Directory based library to OPDS feeds generator"
 authors = ["Taras Ivashchenko <oxdef@oxdef.info>"]
 readme = "README.md"
