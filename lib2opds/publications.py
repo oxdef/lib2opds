@@ -84,6 +84,11 @@ class Publication:
         self.authors = sidecar.authors
         self.title = sidecar.title
         self.description = sidecar.description
+        self.language = sidecar.language
+        self.identifier = sidecar.identifier
+        self.issued = sidecar.issued
+        self.publisher = sidecar.publisher
+
         return True
 
     def _save_cover_to_sidecar_file(self, sidecar: CoverSidecarFile) -> bool:
@@ -95,6 +100,11 @@ class Publication:
         sidecar.authors = self.authors
         sidecar.title = self.title
         sidecar.description = self.description
+        sidecar.language = self.language
+        sidecar.identifier = self.identifier
+        sidecar.issued = self.issued
+        sidecar.publisher = self.publisher
+
         return sidecar.write()
 
     def _load_metadata_from_cache(self) -> bool:
@@ -110,6 +120,7 @@ class Publication:
     def _load_metadata_from_sidecar_files(self, fpath: Path) -> bool:
         if not self._load_metadata_from_sidecar_file(get_metadata_sidecar_file(fpath)):
             return False
+
         self._load_cover_from_sidecar_file(
             get_cover_sidecar_file(
                 fpath,
@@ -134,12 +145,13 @@ class Publication:
         return True
 
     def load_metadata(self) -> bool:
-        if not self._load_metadata_from_cache():
-            self._load_metadata()
-        else:
+        if self._load_metadata_from_cache():
+            self._save_cover()  # To have persistent path to the cover for XML output
             return True
+        else:
+            self._load_metadata()
         self._load_metadata_from_sidecar_files(self.fpath)
-        self._save_cover()  # To have persistent path to the cover for XML output
+        self._save_cover()
         self._save_metadata_to_cache()
         return True
 

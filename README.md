@@ -61,7 +61,7 @@ location /opds {
         auth_basic  "Library Area";
         auth_basic_user_file /etc/nginx/htpasswd;
         alias /opds-dir;
-        index root.xml index.xml;
+        index index.xml;
 }
 
 location /opds/covers {
@@ -73,5 +73,6 @@ Library location here is not protected with basic auth because of the bug in som
 
 ## Tested devices and applications
 
-* PocketBook devices
-* KyBook 3 EBook Reader
+* PocketBook devices with "Network Libraries" feature
+* KyBook 3 eBook Reader
+* [Foliate](https://johnfactotum.github.io/foliate/) eBook Reader

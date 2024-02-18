@@ -24,6 +24,7 @@ class Config:
     feed_all_publications_title: str = "All Books"
     feed_by_author_title: str = "Authors"
     cache_dir: Path | None = None
+    invalidate_cache: bool = False
 
     def load_from_file(self, config_path: Path) -> bool:
         if not config_path.exists():
@@ -62,5 +63,7 @@ class Config:
             self.clear_opds_dir = args.clear_opds_dir
         if args.cache_dir:
             self.cache_dir = Path(args.cache_dir)
+        if args.invalidate_cache:
+            self.invalidate_cache = args.invalidate_cache
 
         return True

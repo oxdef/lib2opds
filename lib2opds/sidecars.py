@@ -57,6 +57,10 @@ class MetadataSidecarFile(SidecarFile):
     title: str = ""
     authors: list[str] = field(default_factory=list)
     description: str = ""
+    language: str = ""
+    identifier: str = ""
+    issued: str = ""
+    publisher: str = ""
 
 
 @dataclass
@@ -75,6 +79,10 @@ class InfoSidecarFile(MetadataSidecarFile):
         ]
         self.title = info["Publication"].get("title", "")
         self.description = info["Publication"].get("description", "")
+        self.language = info["Publication"].get("language", "")
+        self.identifier = info["Publication"].get("identifier", "")
+        self.issued = info["Publication"].get("issued", "")
+        self.publisher = info["Publication"].get("publisher", "")
 
         return True
 
@@ -84,6 +92,10 @@ class InfoSidecarFile(MetadataSidecarFile):
         info["Publication"]["authors"] = ", ".join(self.authors)
         info["Publication"]["title"] = self.title
         info["Publication"]["description"] = self.description
+        info["Publication"]["language"] = self.language
+        info["Publication"]["identifier"] = self.identifier
+        info["Publication"]["issued"] = self.issued
+        info["Publication"]["publisher"] = self.publisher
 
         try:
             with self.fpath.open("w") as fp:
