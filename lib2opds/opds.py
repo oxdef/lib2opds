@@ -220,7 +220,6 @@ def get_feed_by_language(
         config.feed_by_language_title,
         local_path,
     )
-    print(list(all_languages))
     for language in all_languages:
         local_path = config.opds_dir / config.feeds_dir / Path(str(uuid.uuid4()) + ".xml")
         link_self_href = urljoin(
