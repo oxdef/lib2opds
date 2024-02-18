@@ -31,6 +31,14 @@ def get_authors_from_publications(publications: list[Publication]) -> set[str]:
     return result
 
 
+def get_languages_from_publications(publications: list[Publication]) -> set[str]:
+    result: set[str] = set()
+    for p in publications:
+        if p.language:
+            result.add(p.language)
+    return result
+
+
 def dir2odps(
     config: Config, dirpath: Path, parent: AtomFeed, root: AtomFeed
 ) -> NavigationFeed | AcquisitionFeed:
@@ -193,6 +201,47 @@ def get_feed_by_author(
     return result
 
 
+def get_feed_by_language(
+    config: Config, feed_root: NavigationFeed, all_publications: list[Publication]
+) -> NavigationFeed:
+    all_languages: set[str] = get_languages_from_publications(all_publications)
+    local_path: Path = (
+        config.opds_dir / config.feeds_dir / Path(str(uuid.uuid4()) + ".xml")
+    )
+    link_self_href: str = urljoin(
+        str(config.opds_base_uri), str(local_path.relative_to(config.opds_dir))
+    )
+
+    result: NavigationFeed = NavigationFeed(
+        config,
+        link_self_href,
+        feed_root.link_self_href,
+        feed_root.link_self_href,
+        config.feed_by_language_title,
+        local_path,
+    )
+    print(list(all_languages))
+    for language in all_languages:
+        local_path = config.opds_dir / config.feeds_dir / Path(str(uuid.uuid4()) + ".xml")
+        link_self_href = urljoin(
+            str(config.opds_base_uri), str(local_path.relative_to(config.opds_dir))
+        )
+        language_publications: AcquisitionFeed = AcquisitionFeed(
+            config,
+            link_self_href,
+            feed_root.link_self_href,
+            result.link_self_href,
+            language,
+            local_path,
+        )
+        for p in all_publications:
+            if language == p.language:
+                language_publications.publications.append(p)
+        result.entries.append(language_publications)
+
+    return result
+
+
 def get_feed_new_publications(
     config: Config, feed_root: NavigationFeed, all_publications: list[Publication]
 ) -> AcquisitionFeed:
@@ -244,6 +293,12 @@ def lib2odps(config: Config, dirpath: Path) -> AtomFeed:
         config, feed_root, all_publications
     )
     feed_root.entries.append(feed_by_author)
+
+    # By language
+    feed_by_language: NavigationFeed = get_feed_by_language(
+        config, feed_root, all_publications
+    )
+    feed_root.entries.append(feed_by_language)
 
     # New
     feed_new_publications: AcquisitionFeed = get_feed_new_publications(

@@ -23,6 +23,7 @@ class Config:
     feed_new_publications_title: str = "New Books"
     feed_all_publications_title: str = "All Books"
     feed_by_author_title: str = "Authors"
+    feed_by_language_title: str = "Languages"
     cache_dir: Path | None = None
     invalidate_cache: bool = False
 
