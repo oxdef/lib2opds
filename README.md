@@ -73,6 +73,4 @@ Library location here is not protected with basic auth because of the bug in som
 
 ## Tested devices and applications
 
-* PocketBook devices with "Network Libraries" feature
-* KyBook 3 eBook Reader
-* [Foliate](https://johnfactotum.github.io/foliate/) eBook Reader
+The full list of devices and applications is available on [the wiki page](https://github.com/oxdef/lib2opds/wiki/Tested-devices-and-applications).
