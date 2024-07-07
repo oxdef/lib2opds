@@ -1,26 +1,48 @@
-[tool.poetry]
+[project]
 name = "lib2opds"
-version = "0.1.2"
-description = "Directory based library to OPDS feeds generator"
-authors = ["Taras Ivashchenko <oxdef@oxdef.info>"]
+dynamic = ["version"]
+description = "Static OPDS catalog generator powered by Python"
+authors = [
+    {name = "Taras Ivashchenko", email = "oxdef@oxdef.info"}
+]
 readme = "README.md"
+license = {file = "LICENSE"}
+keywords = ["opds", "ebook", "epub"]
+requires-python = ">=3.11"
+dependencies = [
+    "pypdf>=3.4.1,<4.0.0",
+    "jinja2>=3.1.2,<4.0.0",
+    "defusedxml>=0.7.1",
+    "pillow>=9.4.0,<10.0.0"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: System Administrators",
+    "Intended Audience :: Developers",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3 :: Only"
+]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-jinja2 = "^3.1.2"
-defusedxml = "^0.7.1"
-pillow = "^10.0.1"
-pypdf = "^3.17.0"
-
-
-[tool.poetry.group.dev.dependencies]
-types-pillow = "^10.1.0.2"
+[project.urls]
+Homepage = "https://github.com/oxdef/lib2opds"
+Documentation = "https://github.com/oxdef/lib2opds/wiki"
+Repository = "https://github.com/oxdef/lib2opds.git"
+Issues = "https://github.com/oxdef/lib2opds/issues"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
 
-[tool.poetry.scripts]
+[tool.hatch.version]
+source = "vcs"
+
+[project.scripts]
 lib2opds = "lib2opds.app:cli"
 
 [tool.black]

@@ -80,3 +80,7 @@ def cli() -> None:
             clear_dir(config.opds_dir)
         opds_catalog = lib2odps(config, config.library_dir)
         opds_catalog.export_as_xml()
+
+
+if __name__ == "__main__":
+    cli()
