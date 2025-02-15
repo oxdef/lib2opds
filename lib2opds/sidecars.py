@@ -1,4 +1,5 @@
 import configparser
+import errno
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -25,8 +26,13 @@ class CoverSidecarFile(SidecarFile):
     cover_quality: int | None = None
 
     def read(self) -> bool:
-        if not self.fpath.is_file():
-            return False
+        try:
+            if not self.fpath.is_file():
+                return False
+        except OSError as e:
+            if e.errno == errno.ENAMETOOLONG:
+                return False
+            raise
 
         try:
             im: Image.Image = Image.open(self.fpath)
@@ -66,8 +72,13 @@ class MetadataSidecarFile(SidecarFile):
 @dataclass
 class InfoSidecarFile(MetadataSidecarFile):
     def read(self) -> bool:
-        if not self.fpath.is_file():
-            return False
+        try:
+            if not self.fpath.is_file():
+                return False
+        except OSError as e:
+            if e.errno == errno.ENAMETOOLONG:
+                return False
+            raise
 
         info: configparser.ConfigParser = configparser.ConfigParser(interpolation=None)
         info.read(self.fpath)
