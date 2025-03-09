@@ -47,7 +47,10 @@
     {% if publication.cover_href %}
     <link rel="http://opds-spec.org/image" href="{{ publication.cover_href }}" type="{{ publication.cover_mimetype }}"/>
     {% endif %}
-    <link rel="http://opds-spec.org/acquisition" href="{{ publication.acquisition_link }}" type="{{ publication.mimetype }}"/>
+
+    {% for link in publication.get_acquisition_links() %}
+    <link rel="http://opds-spec.org/acquisition" href="{{ link.href }}" type="{{ link.mimetype }}"/>
+   {% endfor %}
  </entry>
   {% endfor %}
 </feed>

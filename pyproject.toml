@@ -43,7 +43,7 @@ build-backend = "hatchling.build"
 source = "vcs"
 
 [project.scripts]
-lib2opds = "lib2opds.app:cli"
+lib2opds = "lib2opds.__main__:cli"
 
 [tool.black]
 line-length = 90

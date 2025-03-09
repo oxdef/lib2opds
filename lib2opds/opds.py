@@ -38,6 +38,25 @@ def get_languages_from_publications(publications: list[Publication]) -> set[str]
             result.add(p.language)
     return result
 
+def get_index_by_filename(files: list[list[Path]], filename: Path) -> int:
+    for i in range(len(files)):
+        for f in files[i]:
+            if f.stem == filename.stem:
+                return i
+    return -1
+
+
+def group_files_by_filename(filenames: list[str]) -> list[list[Path]]:
+    result: list[list[Path]] = []
+
+    for f in filenames:
+        tmp = Path(f)
+        if (i:= get_index_by_filename(result, tmp)) >= 0:
+            result[i].append(tmp)
+        else:
+            result.append([tmp])
+
+    return result
 
 def dir2odps(
     config: Config, dirpath: Path, parent: AtomFeed, root: AtomFeed
@@ -77,10 +96,11 @@ def dir2odps(
             title,
             local_path,
         )
-        # TODO pagination https://specs.opds.io/opds-1.2#24-listing-acquisition-feeds
-        for f in filenames:
-            fpath = Path(f)
-            if p := get_publication(fpath, config):
+
+        files = group_files_by_filename(filenames)
+
+        for f in files:
+            if p := get_publication(f, config):
                 p.load_metadata()
                 feed.publications.append(p)
         return feed
@@ -259,8 +279,7 @@ def get_feed_new_publications(
         local_path,
     )
     for p in all_publications:
-        updated = datetime.fromtimestamp(p.fpath.stat().st_mtime)
-        if (datetime.now() - updated).days < config.publication_freshness_days:
+        if (datetime.now() - p.updated()).days < config.publication_freshness_days:
             feed_new_publications.publications.append(p)
     return feed_new_publications
 
