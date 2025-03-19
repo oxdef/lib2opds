@@ -8,7 +8,7 @@ from urllib.parse import quote, urljoin
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 from lib2opds.config import Config
-from lib2opds.publications import Publication, get_publication
+from lib2opds.publications import Publication
 
 
 def get_urn() -> str:
