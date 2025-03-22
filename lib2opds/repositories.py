@@ -37,9 +37,35 @@ class FilesystemRepository:
         return str(fpath.stem.replace("_", " ").capitalize())
 
     def get_publication(self, files: list[Path]) -> Publication | None:
-        pub_title: str = self.get_title_by_filename(files[0])
+        ebook_files = self._get_ebook_files(files)
+        if not len(ebook_files):
+            return None
+
+        pub_title: str = self.get_title_by_filename(ebook_files[0])
         p = Publication(pub_title)
+
+        (metadata, cover) = self._load_metadata_from_files(files)
+
+        if metadata:
+            p = self._init_publication_from_metadata(p, metadata)
+        # Save cover to local path and create href for the publication
+        if cover:
+            local_cover_path = self._get_cover_local_path(p.cover_filename)
+            cover.write(
+                local_cover_path,
+                self.config.cover_quality,
+                self.config.cover_width,
+                self.config.cover_height,
+            )
+            p.cover_href = self._get_cover_href(local_cover_path)
+            p.cover_mimetype = "image/jpeg"
+
+        p.acquisition_links = self._get_acquisition_links(ebook_files)
+        p.updated = self._get_updated_from_ebook_files(ebook_files)
         return p
+
+    def _get_updated_from_ebook_files(self, ebook_files: list[Path]) -> datetime:
+        return datetime.fromtimestamp(ebook_files[0].stat().st_mtime)
 
     def _get_cover_local_path(self, cover_filename: str) -> Path:
         cover_dir: Path = self.config.opds_dir / "covers"
@@ -68,7 +94,8 @@ class FilesystemRepository:
         return result
 
     def _get_ebook_path(self, files: list[Path]) -> Path | None:
-        return self._get_ebook_files(files)[0] if len(files) else None
+        ebook_files = self._get_ebook_files(files)
+        return ebook_files[0] if len(ebook_files) else None
 
     def _get_ebook_files(self, files: list[Path]) -> list[Path]:
         result: list[Path] = []
@@ -108,6 +135,20 @@ class FilesystemRepository:
             return (metadata, None)
         return (metadata, cover)
 
+    def _load_metadata_from_files(
+        self, files: list[Path]
+    ) -> tuple[MetadataSidecarFile | None, CoverSidecarFile | None]:
+        (metadata, cover) = self._load_metadata_from_ebook_files(files)
+        (sidecar_metadata, sidecar_cover) = self._load_metadata_from_sidecar_files(files)
+
+        if sidecar_metadata:
+            metadata = sidecar_metadata
+
+        if sidecar_cover:
+            cover = sidecar_cover
+
+        return (metadata, cover)
+
     def _update(self, field_name: str, value: Any) -> None:
         if hasattr(self, field_name):
             setattr(self, field_name, value)
@@ -127,7 +168,11 @@ class FilesystemRepository:
 
 class CachingFilesystemRepository(FilesystemRepository):
     def get_publication(self, files: list[Path]) -> Publication | None:
-        pub_title: str = self.get_title_by_filename(files[0])
+        ebook_files = self._get_ebook_files(files)
+        if not len(ebook_files):
+            return None
+
+        pub_title: str = self.get_title_by_filename(ebook_files[0])
         p = Publication(pub_title)
 
         # Try to load metadata from cache
@@ -136,16 +181,7 @@ class CachingFilesystemRepository(FilesystemRepository):
 
         # Try to load metadata from ebook files and sidecar files
         if metadata == None:
-            (metadata, cover) = self._load_metadata_from_ebook_files(files)
-            (sidecar_metadata, sidecar_cover) = self._load_metadata_from_sidecar_files(
-                files
-            )
-
-            if sidecar_metadata:
-                metadata = sidecar_metadata
-
-            if sidecar_cover:
-                cover = sidecar_cover
+            (metadata, cover) = self._load_metadata_from_files(files)
 
         if metadata:
             p = self._init_publication_from_metadata(p, metadata)
@@ -171,9 +207,8 @@ class CachingFilesystemRepository(FilesystemRepository):
             if cache_path:
                 cover.write(cache_path.with_suffix(".cover"), self.config.cover_quality)
 
-        p.acquisition_links = self._get_acquisition_links(self._get_ebook_files(files))
-        ebook_files = self._get_ebook_files(files)
-        p.updated = datetime.fromtimestamp(ebook_files[0].stat().st_mtime)
+        p.acquisition_links = self._get_acquisition_links(ebook_files)
+        p.updated = self._get_updated_from_ebook_files(ebook_files)
         return p
 
     def _load_metadata_from_cache(self, files: list[Path]) -> MetadataSidecarFile | None:

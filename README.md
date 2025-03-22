@@ -1,6 +1,6 @@
 # Lib2OPDS
 
-`lib2opds` generates [OPDS](https://opds.io/) ([version 1.2](https://specs.opds.io/opds-1.2)) catalog for local e-book library so it can be hosted utilizing web server. Currently meta data extraction is supported only for ePUB format.
+`lib2opds` generates static [OPDS](https://opds.io/) ([version 1.2](https://specs.opds.io/opds-1.2)) catalog for local e-book library.
 
 ## Features
 
@@ -70,6 +70,23 @@ location /opds/covers {
 ```
 
 Library location here is not protected with basic auth because of the bug in some e-book reader software.
+
+## Sidecar files
+
+`lib2opds` detects sidecar files for the target e-book file and extracts metadata and cover from them.
+
+For example, in case of `some-book.epub` e-book file `lib2opds` will try to check for `some-book.info` and `some-book.cover` files.
+
+`.info` sidecar files are basically INI-format files:
+
+```
+[Publication]
+authors = Some author, Another Author
+title = Some title
+description = Some description here
+```
+
+`.cover` is just an image file.
 
 ## Tested devices and applications
 
