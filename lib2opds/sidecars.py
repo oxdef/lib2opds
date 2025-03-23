@@ -3,7 +3,7 @@ import errno
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageOps
 
 
 @dataclass
@@ -13,7 +13,7 @@ class SidecarFile:
     def read(self) -> bool:
         return True
 
-    def write(self) -> bool:
+    def write(self, fpath: Path | None = None) -> bool:
         return True
 
 
@@ -48,11 +48,23 @@ class CoverSidecarFile(SidecarFile):
             print(f"Can't convert cover for {self.fpath}")
             return False
 
-    def write(self) -> bool:
+    def write(
+        self,
+        fpath: Path | None = None,
+        cover_quality: int | None = None,
+        cover_width: int | None = None,
+        cover_height: int | None = None,
+    ) -> bool:
         if not self.cover:
             return False
         try:
-            self.cover.save(self.fpath, "JPEG", quality=self.cover_quality)
+            fpath = fpath if fpath else self.fpath
+            cover_quality = cover_quality if cover_quality else self.cover_quality
+            if cover_width and cover_height:
+                cover = ImageOps.contain(self.cover, (cover_width, cover_height))
+                cover.save(fpath, "JPEG", quality=cover_quality)
+            else:
+                self.cover.save(fpath, "JPEG", quality=cover_quality)
             return True
         except:
             return False
@@ -97,7 +109,7 @@ class InfoSidecarFile(MetadataSidecarFile):
 
         return True
 
-    def write(self) -> bool:
+    def write(self, fpath: Path | None = None) -> bool:
         info: configparser.ConfigParser = configparser.ConfigParser(interpolation=None)
         info["Publication"] = {}
         info["Publication"]["authors"] = ", ".join(self.authors)
@@ -109,7 +121,8 @@ class InfoSidecarFile(MetadataSidecarFile):
         info["Publication"]["publisher"] = self.publisher
 
         try:
-            with self.fpath.open("w") as fp:
+            fpath = fpath if fpath else self.fpath
+            with fpath.open("w") as fp:
                 info.write(fp)
         except:
             return False
@@ -122,7 +135,10 @@ def get_metadata_sidecar_file(fpath: Path, kind: str = "info") -> MetadataSideca
 
 
 def get_cover_sidecar_file(
-    fpath: Path, cover_width: int, cover_height: int, cover_quality: int
+    fpath: Path,
+    cover_width: int | None = None,
+    cover_height: int | None = None,
+    cover_quality: int | None = None,
 ) -> CoverSidecarFile:
     sidecar = CoverSidecarFile(fpath.with_suffix(".cover"))
     sidecar.cover_width = cover_width

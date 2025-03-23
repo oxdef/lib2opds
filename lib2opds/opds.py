@@ -8,7 +8,8 @@ from urllib.parse import quote, urljoin
 
 from lib2opds.config import Config
 from lib2opds.feeds import AcquisitionFeed, AtomFeed, NavigationFeed
-from lib2opds.publications import Publication, get_publication
+from lib2opds.publications import Publication
+from lib2opds.repositories import CachingFilesystemRepository
 
 
 def get_dir_contents(dirpath: Path) -> tuple[list[str], list[str]]:
@@ -39,6 +40,27 @@ def get_languages_from_publications(publications: list[Publication]) -> set[str]
     return result
 
 
+def get_index_by_filename(files: list[list[Path]], filename: Path) -> int:
+    for i in range(len(files)):
+        for f in files[i]:
+            if f.stem == filename.stem:
+                return i
+    return -1
+
+
+def group_files_by_filename(filenames: list[str]) -> list[list[Path]]:
+    result: list[list[Path]] = []
+
+    for f in filenames:
+        tmp = Path(f)
+        if (i := get_index_by_filename(result, tmp)) >= 0:
+            result[i].append(tmp)
+        else:
+            result.append([tmp])
+
+    return result
+
+
 def dir2odps(
     config: Config, dirpath: Path, parent: AtomFeed, root: AtomFeed
 ) -> NavigationFeed | AcquisitionFeed:
@@ -53,6 +75,7 @@ def dir2odps(
     )
 
     feed: AtomFeed
+    repo = CachingFilesystemRepository(config)
     # Directory contains other directories or empty
     if len(dirnames) > 0 or (len(dirnames) + len(filenames) == 0):
         feed = NavigationFeed(
@@ -77,11 +100,11 @@ def dir2odps(
             title,
             local_path,
         )
-        # TODO pagination https://specs.opds.io/opds-1.2#24-listing-acquisition-feeds
-        for f in filenames:
-            fpath = Path(f)
-            if p := get_publication(fpath, config):
-                p.load_metadata()
+
+        files = group_files_by_filename(filenames)
+
+        for f in files:
+            if p := repo.get_publication(f):
                 feed.publications.append(p)
         return feed
     else:
@@ -258,9 +281,9 @@ def get_feed_new_publications(
         config.feed_new_publications_title,
         local_path,
     )
+
     for p in all_publications:
-        updated = datetime.fromtimestamp(p.fpath.stat().st_mtime)
-        if (datetime.now() - updated).days < config.publication_freshness_days:
+        if (datetime.now() - p.updated).days < config.publication_freshness_days:
             feed_new_publications.publications.append(p)
     return feed_new_publications
 
@@ -280,8 +303,17 @@ def lib2odps(config: Config, dirpath: Path) -> AtomFeed:
     feed_by_directory.title = config.feed_by_directory_title
     feed_root.entries.append(feed_by_directory)
 
-    # All publications
     all_publications: list[Publication] = feed_by_directory.get_all_publications()
+
+    # New
+    feed_new_publications: AcquisitionFeed = get_feed_new_publications(
+        config, feed_root, all_publications
+    )
+
+    if len(feed_new_publications.get_all_publications()):
+        feed_root.entries.append(feed_new_publications)
+
+    # All publications
     feed_all_publications: AcquisitionFeed = get_feed_all_publications(
         config, feed_root, all_publications
     )
@@ -298,11 +330,5 @@ def lib2odps(config: Config, dirpath: Path) -> AtomFeed:
         config, feed_root, all_publications
     )
     feed_root.entries.append(feed_by_language)
-
-    # New
-    feed_new_publications: AcquisitionFeed = get_feed_new_publications(
-        config, feed_root, all_publications
-    )
-    feed_root.entries.append(feed_new_publications)
 
     return feed_root
