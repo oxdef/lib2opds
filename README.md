@@ -81,9 +81,13 @@ For example, in case of `some-book.epub` e-book file `lib2opds` will try to chec
 
 ```
 [Publication]
-authors = Some author, Another Author
-title = Some title
-description = Some description here
+title = 1984
+authors =  George Orwell
+description = Some summary here
+language = en
+issued = 1949
+publisher = SomePublisher, Inc.
+identifier = urn:isbn:9781443434973
 ```
 
 `.cover` is just an image file.
