@@ -11,6 +11,20 @@
     <name>lib2opds generator</name>
     <uri>http://opds-spec.org</uri>
   </author>
+  {% if feed.is_root() %}
+  {% for entry in feed.entries %}
+  <entry>
+    {% if entry.kind == "acquisition" %}
+    <title>{{ entry.get_title() }} ({{ entry.publications | count }})</title>
+    {% else %}
+    <title>{{ entry.get_title() }}</title>
+    {% endif %}
+    <link rel="subsection" href="{{ entry.link_self_href }}" type="application/atom+xml;profile=opds-catalog;kind={{ entry.kind }}"/>
+    <updated>{{ entry.updated }}</updated>
+    <id>{{ entry.id }}</id>
+  </entry>
+  {% endfor %}
+  {% else %}
   {% for entry in feed.entries | sort(attribute="title") %}
   <entry>
     {% if entry.kind == "acquisition" %}
@@ -23,4 +37,5 @@
     <id>{{ entry.id }}</id>
   </entry>
   {% endfor %}
+  {% endif %}
 </feed>

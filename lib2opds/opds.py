@@ -303,8 +303,17 @@ def lib2odps(config: Config, dirpath: Path) -> AtomFeed:
     feed_by_directory.title = config.feed_by_directory_title
     feed_root.entries.append(feed_by_directory)
 
-    # All publications
     all_publications: list[Publication] = feed_by_directory.get_all_publications()
+
+    # New
+    feed_new_publications: AcquisitionFeed = get_feed_new_publications(
+        config, feed_root, all_publications
+    )
+
+    if len(feed_new_publications.get_all_publications()):
+        feed_root.entries.append(feed_new_publications)
+
+    # All publications
     feed_all_publications: AcquisitionFeed = get_feed_all_publications(
         config, feed_root, all_publications
     )
@@ -321,11 +330,5 @@ def lib2odps(config: Config, dirpath: Path) -> AtomFeed:
         config, feed_root, all_publications
     )
     feed_root.entries.append(feed_by_language)
-
-    # New
-    feed_new_publications: AcquisitionFeed = get_feed_new_publications(
-        config, feed_root, all_publications
-    )
-    feed_root.entries.append(feed_new_publications)
 
     return feed_root
