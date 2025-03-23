@@ -27,23 +27,40 @@ class Config:
     cache_dir: Path | None = None
     invalidate_cache: bool = False
 
+    def _update_str_field(self, field_name: str, value: str) -> None:
+        if hasattr(self, field_name):
+            setattr(self, field_name, value)
+
     def load_from_file(self, config_path: Path) -> bool:
         if not config_path.exists():
             return False
 
         config = configparser.ConfigParser()
         config.read(config_path)
-        self.opds_dir = Path(config["General"].get("opds_dir"))
-        self.opds_base_uri = config["General"].get("opds_base_uri")
 
+        str_fields = (
+            "root_filename",
+            "opds_base_uri",
+            "library_base_uri",
+            "library_title",
+            "feed_by_directory_title",
+            "feed_new_publications_title",
+            "feed_all_publications_title",
+            "feed_by_author_title",
+            "feed_by_language_title",
+        )
+
+        for str_field in str_fields:
+            if str_value := config["General"].get(str_field):
+                self._update_str_field(str_field, str_value)
+
+        self.opds_dir = Path(config["General"].get("opds_dir"))
         self.library_dir = Path(config["General"].get("library_dir"))
-        self.library_base_uri = config["General"].get("library_base_uri")
-        self.library_title = config["General"].get("library_title")
         self.clear_opds_dir = config["General"].getboolean("clear_opds_dir")
         self.publication_freshness_days = config["General"].getint(
             "publication_freshness_days", 14
         )
-        self.root_filename = config["General"].get("root_filename")
+
         if config["General"].get("cache_dir", ""):
             self.cache_dir = Path(config["General"].get("cache_dir"))
 
