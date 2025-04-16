@@ -4,8 +4,11 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 
+from lib2opds import __version__
 from lib2opds.config import Config
 from lib2opds.opds import lib2odps
+
+CONFIG_PATH = "/etc/lib2opds.ini"
 
 
 def clear_dir(top: Path) -> bool:
@@ -31,39 +34,39 @@ def get_utime_dir(dpath: Path) -> datetime:
 
 def cli() -> None:
     parser = argparse.ArgumentParser(
-        description="Generate OPDS catalog for local e-book library"
+        prog="lib2opds", description="Generate OPDS catalog for local e-book library"
     )
-    parser.add_argument("--library-dir", help="Directory with your books")
-    parser.add_argument("--opds-dir", help="Target directory for OPDS feeds")
+    parser.add_argument("--library-dir", help="directory with your books")
+    parser.add_argument("--opds-dir", help="target directory for OPDS feeds")
     parser.add_argument(
         "--library-base-uri",
-        help="Base URI for serving books from the library, for example https://your-domain.com/library",
+        help="base URI for serving books from the library, for example https://your-domain.com/library",
     )
     parser.add_argument(
         "--opds-base-uri",
-        help="Base URI for OPDS, for example https://domain.example/opds",
+        help="base URI for OPDS, for example https://domain.example/opds",
     )
-    parser.add_argument("--library_title", help="Lybrary title")
-    parser.add_argument("-c", "--config", help="Config path", default="config.ini")
+    parser.add_argument("--library_title", help="library title")
+    parser.add_argument("-c", "--config", help="config path", default="config.ini")
     parser.add_argument(
-        "-u", "--update", help="Force recreation of ODPS feeds", action="store_true"
+        "-u", "--update", help="force recreation of ODPS feeds", action="store_true"
     )
     parser.add_argument(
         "--clear-opds-dir",
-        help="Clear OPDS directory before generating result feeds",
+        help="clear OPDS directory before generating result feeds",
         action="store_true",
     )
-    parser.add_argument("--cache-dir", help="Directory for caching ebook metadata")
+    parser.add_argument("--cache-dir", help="directory for caching ebook metadata")
     parser.add_argument(
         "--invalidate-cache",
-        help="Clear cache directory before generating result feeds",
+        help="clear cache directory before generating result feeds",
         action="store_true",
     )
-
+    parser.add_argument("--version", action="version", version=__version__)
     args = parser.parse_args()
 
     config = Config()
-    config.load_from_file(Path("/etc/lib2opds.ini"))
+    config.load_from_file(Path(CONFIG_PATH))
     config.load_from_file(Path(args.config))
     config.load_from_args(args)
     opds_updated = None

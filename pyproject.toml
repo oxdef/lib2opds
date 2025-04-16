@@ -36,11 +36,11 @@ Repository = "https://github.com/oxdef/lib2opds.git"
 Issues = "https://github.com/oxdef/lib2opds/issues"
 
 [build-system]
-requires = ["hatchling", "hatch-vcs"]
+requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.version]
-source = "vcs"
+path = "lib2opds/__init__.py"
 
 [project.scripts]
 lib2opds = "lib2opds.__main__:cli"
