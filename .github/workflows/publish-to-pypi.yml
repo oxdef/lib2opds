@@ -2,6 +2,9 @@ name: Publish Python distribution to PyPI
 
 on: workflow_dispatch
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Build distribution
@@ -15,9 +18,11 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: "3.11"
-    - name: Install pypa/build
-      run: python3 -m pip install build --user
+    - name: Display Python version
+      run: python -c "import sys; print(sys.version)"  
+    - name: Install dev tools
+      run: python -m pip install build pytest
+    - name: Test with pytest
+      run: pytest .
     - name: Build a binary wheel and a source tarball
-      run: python3 -m build
-    - name: Debug
-      run: echo "$GITHUB_REF_NAME"
+      run: python -m build
