@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <id>{{ feed.id }}</id>
-  <link rel="self" href="{{ feed.link_self_href }}" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
-  <link rel="start" href="{{ feed.link_start_href }}" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
-  <link rel="up" href="{{ feed.link_up_href }}" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <id>urn:uuid:{{ feed.id }}</id>
+  <link rel="self" href="{{ feed.get_link_self_href_xml() }}" type="application/atom+xml;profile=opds-catalog;kind=acquisition"/>
+  {% if feed.root %}
+  <link rel="start" href="{{ feed.root.get_link_self_href_xml() }}" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  {% endif %}
+  {% if feed.parent %}
+  <link rel="up" href="{{ feed.parent.get_link_self_href_xml() }}" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  {% endif %}
 
   <title>{{ feed.get_title() }}</title>
   <updated>{{ feed.updated }}</updated>
@@ -19,9 +23,9 @@
     {% else %}
     <title>{{ entry.get_title() }}</title>
     {% endif %}
-    <link rel="subsection" href="{{ entry.link_self_href }}" type="application/atom+xml;profile=opds-catalog;kind={{ entry.kind }}"/>
+    <link rel="subsection" href="{{ entry.get_link_self_href_xml() }}" type="application/atom+xml;profile=opds-catalog;kind={{ entry.kind }}"/>
     <updated>{{ entry.updated }}</updated>
-    <id>{{ entry.id }}</id>
+    <id>urn:uuid:{{ entry.id }}</id>
   </entry>
   {% endfor %}
   {% else %}
@@ -32,9 +36,9 @@
     {% else %}
     <title>{{ entry.get_title() }}</title>
     {% endif %}
-    <link rel="subsection" href="{{ entry.link_self_href }}" type="application/atom+xml;profile=opds-catalog;kind={{ entry.kind }}"/>
+    <link rel="subsection" href="{{ entry.get_link_self_href_xml() }}" type="application/atom+xml;profile=opds-catalog;kind={{ entry.kind }}"/>
     <updated>{{ entry.updated }}</updated>
-    <id>{{ entry.id }}</id>
+    <id>urn:uuid:{{ entry.id }}</id>
   </entry>
   {% endfor %}
   {% endif %}

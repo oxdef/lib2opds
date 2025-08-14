@@ -69,37 +69,19 @@ def dir2odps(
     dirnames, filenames = get_dir_contents(dirpath)
     last_updated = datetime.fromtimestamp(dirpath.stat().st_mtime)
     title = dirpath.name.capitalize()
-    local_path = config.opds_dir / config.feeds_dir / Path(str(uuid.uuid4()) + ".xml")
-    link_self_href = urljoin(
-        str(config.opds_base_uri), str(local_path.relative_to(config.opds_dir))
-    )
 
     feed: AtomFeed
     repo = CachingFilesystemRepository(config)
     # Directory contains other directories or empty
     if len(dirnames) > 0 or (len(dirnames) + len(filenames) == 0):
-        feed = NavigationFeed(
-            config,
-            link_self_href,
-            root.link_self_href,
-            parent.link_self_href,
-            title,
-            local_path,
-        )
+        feed = NavigationFeed(config, root, parent, title)
         for d in dirnames:
             dir_feed: NavigationFeed | AcquisitionFeed = dir2odps(
                 config, Path(d), feed, root
             )
             feed.entries.append(dir_feed)
     elif len(filenames) > 0:
-        feed = AcquisitionFeed(
-            config,
-            link_self_href,
-            root.link_self_href,
-            parent.link_self_href,
-            title,
-            local_path,
-        )
+        feed = AcquisitionFeed(config, root, parent, title)
 
         files = group_files_by_filename(filenames)
 
@@ -140,19 +122,8 @@ def is_feed_sutable_to_author(feed: AtomFeed, author: str) -> bool:
 def get_feed_all_publications(
     config: Config, feed_root: NavigationFeed, all_publications: list[Publication]
 ) -> AcquisitionFeed:
-    local_path: Path = (
-        config.opds_dir / config.feeds_dir / Path(str(uuid.uuid4()) + ".xml")
-    )
-    link_self_href = urljoin(
-        str(config.opds_base_uri), str(local_path.relative_to(config.opds_dir))
-    )
     feed_all_publications = AcquisitionFeed(
-        config,
-        link_self_href,
-        feed_root.link_self_href,
-        feed_root.link_self_href,
-        config.feed_all_publications_title,
-        local_path,
+        config, feed_root, feed_root, config.feed_all_publications_title
     )
     for p in all_publications:
         feed_all_publications.publications.append(p)
@@ -163,19 +134,8 @@ def get_feed_by_author(
     config: Config, feed_root: NavigationFeed, all_publications: list[Publication]
 ) -> NavigationFeed:
     all_authors: set[str] = get_authors_from_publications(all_publications)
-    local_path: Path = (
-        config.opds_dir / config.feeds_dir / Path(str(uuid.uuid4()) + ".xml")
-    )
-    link_self_href: str = urljoin(
-        str(config.opds_base_uri), str(local_path.relative_to(config.opds_dir))
-    )
     result: NavigationFeed = NavigationFeed(
-        config,
-        link_self_href,
-        feed_root.link_self_href,
-        feed_root.link_self_href,
-        config.feed_by_author_title,
-        local_path,
+        config, feed_root, feed_root, config.feed_by_author_title
     )
 
     # A, B, C ... Z
@@ -183,17 +143,8 @@ def get_feed_by_author(
 
     # feed_by_author -> [A, B, C ... Z]
     for first_letter in first_letters:
-        local_path = config.opds_dir / config.feeds_dir / Path(str(uuid.uuid4()) + ".xml")
-        link_self_href = urljoin(
-            str(config.opds_base_uri), str(local_path.relative_to(config.opds_dir))
-        )
         feed_by_author_first_letter: NavigationFeed = NavigationFeed(
-            config,
-            link_self_href,
-            feed_root.link_self_href,
-            result.link_self_href,
-            first_letter,
-            local_path,
+            config, feed_root, result, first_letter
         )
         result.entries.append(feed_by_author_first_letter)
     # A -> [Author1, Author2], B -> ...
@@ -201,20 +152,8 @@ def get_feed_by_author(
         for feed in result.entries:
             if not is_feed_sutable_to_author(feed, author):
                 continue
-
-            local_path = (
-                config.opds_dir / config.feeds_dir / Path(str(uuid.uuid4()) + ".xml")
-            )
-            link_self_href = urljoin(
-                str(config.opds_base_uri), str(local_path.relative_to(config.opds_dir))
-            )
             author_publications: AcquisitionFeed = AcquisitionFeed(
-                config,
-                link_self_href,
-                feed_root.link_self_href,
-                feed.link_self_href,
-                author,
-                local_path,
+                config, feed_root, feed, author
             )
             for p in all_publications:
                 if author in p.authors:
@@ -228,33 +167,12 @@ def get_feed_by_language(
     config: Config, feed_root: NavigationFeed, all_publications: list[Publication]
 ) -> NavigationFeed:
     all_languages: set[str] = get_languages_from_publications(all_publications)
-    local_path: Path = (
-        config.opds_dir / config.feeds_dir / Path(str(uuid.uuid4()) + ".xml")
-    )
-    link_self_href: str = urljoin(
-        str(config.opds_base_uri), str(local_path.relative_to(config.opds_dir))
-    )
-
     result: NavigationFeed = NavigationFeed(
-        config,
-        link_self_href,
-        feed_root.link_self_href,
-        feed_root.link_self_href,
-        config.feed_by_language_title,
-        local_path,
+        config, feed_root, feed_root, config.feed_by_language_title
     )
     for language in all_languages:
-        local_path = config.opds_dir / config.feeds_dir / Path(str(uuid.uuid4()) + ".xml")
-        link_self_href = urljoin(
-            str(config.opds_base_uri), str(local_path.relative_to(config.opds_dir))
-        )
         language_publications: AcquisitionFeed = AcquisitionFeed(
-            config,
-            link_self_href,
-            feed_root.link_self_href,
-            result.link_self_href,
-            language,
-            local_path,
+            config, feed_root, result, language
         )
         for p in all_publications:
             if language == p.language:
@@ -267,19 +185,8 @@ def get_feed_by_language(
 def get_feed_new_publications(
     config: Config, feed_root: NavigationFeed, all_publications: list[Publication]
 ) -> AcquisitionFeed:
-    local_path: Path = (
-        config.opds_dir / config.feeds_dir / Path(str(uuid.uuid4()) + ".xml")
-    )
-    link_self_href = urljoin(
-        str(config.opds_base_uri), str(local_path.relative_to(config.opds_dir))
-    )
     feed_new_publications = AcquisitionFeed(
-        config,
-        link_self_href,
-        feed_root.link_self_href,
-        feed_root.link_self_href,
-        config.feed_new_publications_title,
-        local_path,
+        config, feed_root, feed_root, config.feed_new_publications_title
     )
 
     for p in all_publications:
@@ -290,13 +197,7 @@ def get_feed_new_publications(
 
 def lib2odps(config: Config, dirpath: Path) -> AtomFeed:
     title = config.library_title
-    local_path: Path = config.opds_dir / config.root_filename
-    link_start_href = link_up_href = link_self_href = urljoin(
-        str(config.opds_base_uri), str(local_path.relative_to(config.opds_dir))
-    )
-    feed_root = NavigationFeed(
-        config, link_self_href, link_start_href, link_up_href, title, local_path
-    )
+    feed_root = NavigationFeed(config, None, None, title)
 
     # By directory
     feed_by_directory = dir2odps(config, config.library_dir, feed_root, feed_root)

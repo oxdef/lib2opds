@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ feed.get_title() }}{% endblock %}
+{% block content %}
+  <table>
+  {% for publication in feed.publications  | sort(attribute="title") %}
+  <tr>
+    <td>
+    {% if publication.cover_href %}
+    <img src="{{ publication.cover_href }}" width="100" />
+    {% endif %}
+    </td>
+    <td><strong>{{ publication.title }}</strong><br />
+    {{ publication.authors | join(', ') }}
+    </td>
+    <td>
+    {% for link in publication.acquisition_links %}
+    {% if link.mimetype == "application/epub+zip" %}
+     <a href="{{ link.href }}">EPUB</a>&nbsp;
+    {% elif link.mimetype == "application/pdf" %}
+    <a href="{{ link.href }}">PDF</a>&nbsp;
+    {% else %}
+    <a href="{{ link.href }}">{{ link.mimetime  }}</a>&nbsp;
+    {% endif %}
+   {% endfor %}
+   </td></tr>
+  {% endfor %}
+  </table>
+{% endblock %}

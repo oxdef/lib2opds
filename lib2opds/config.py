@@ -26,6 +26,9 @@ class Config:
     feed_by_language_title: str = "Languages"
     cache_dir: Path | None = None
     invalidate_cache: bool = False
+    index_filename: str = "index.html"
+    site: bool = False
+    pages_dir: Path = field(default_factory=Path)
 
     def _update_str_field(self, field_name: str, value: str) -> None:
         if hasattr(self, field_name):
@@ -48,6 +51,7 @@ class Config:
             "feed_all_publications_title",
             "feed_by_author_title",
             "feed_by_language_title",
+            "index_filename",
         )
 
         for str_field in str_fields:
@@ -57,6 +61,7 @@ class Config:
         self.opds_dir = Path(config["General"].get("opds_dir"))
         self.library_dir = Path(config["General"].get("library_dir"))
         self.clear_opds_dir = config["General"].getboolean("clear_opds_dir")
+        self.site = config["General"].getboolean("site")
         self.publication_freshness_days = config["General"].getint(
             "publication_freshness_days", 14
         )
