@@ -24,6 +24,13 @@ def get_dir_contents(dirpath: Path) -> tuple[list[str], list[str]]:
     return (dirnames, filenames)
 
 
+def get_titles_from_publications(publications: list[Publication]) -> set[str]:
+    result: set[str] = set()
+    for p in publications:
+        result.add(p.title)
+    return result
+
+
 def get_authors_from_publications(publications: list[Publication]) -> set[str]:
     result: set[str] = set()
     for p in publications:
@@ -100,10 +107,13 @@ def author_to_first_letters(author: str) -> set[str]:
     return set([l[0].upper() for l in chunks if len(l) > 1])
 
 
-def generate_first_letters(all_authors: set[str]) -> set[str]:
+def generate_first_letters(strings: set[str], split: bool = True) -> set[str]:
     result: set[str] = set()
-    for author in all_authors:
-        chunks = [c.strip() for c in author.split(" ") if c.strip()]
+    for s in strings:
+        if split:
+            chunks = [c.strip() for c in s.split(" ") if c.strip()]
+        else:
+            chunks = [s.strip()]
         letters = [l[0].upper() for l in chunks if len(l) > 1]
         for l in letters:
             if l.isalnum():
@@ -163,6 +173,27 @@ def get_feed_by_author(
     return result
 
 
+def get_feed_all_publications_index(
+    config: Config, feed_root: NavigationFeed, all_publications: list[Publication]
+) -> NavigationFeed:
+    all_titles: set[str] = get_titles_from_publications(all_publications)
+    result: NavigationFeed = NavigationFeed(
+        config, feed_root, feed_root, config.feed_all_publications_title
+    )
+
+    first_letters: set[str] = generate_first_letters(all_titles, False)
+
+    for first_letter in first_letters:
+        feed_by_title_first_letter: AcquisitionFeed = AcquisitionFeed(
+            config, feed_root, result, first_letter
+        )
+        for p in all_publications:
+            if p.title.startswith(first_letter):
+                feed_by_title_first_letter.publications.append(p)
+        result.entries.append(feed_by_title_first_letter)
+    return result
+
+
 def get_feed_by_language(
     config: Config, feed_root: NavigationFeed, all_publications: list[Publication]
 ) -> NavigationFeed:
@@ -215,7 +246,7 @@ def lib2odps(config: Config, dirpath: Path) -> AtomFeed:
         feed_root.entries.append(feed_new_publications)
 
     # All publications
-    feed_all_publications: AcquisitionFeed = get_feed_all_publications(
+    feed_all_publications: NavigationFeed = get_feed_all_publications_index(
         config, feed_root, all_publications
     )
     feed_root.entries.append(feed_all_publications)
