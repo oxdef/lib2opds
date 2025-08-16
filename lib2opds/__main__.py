@@ -63,6 +63,11 @@ def cli() -> None:
         action="store_true",
     )
     parser.add_argument("--version", action="version", version=__version__)
+    parser.add_argument(
+        "--generate-site",
+        help="generate static site additionally to OPDS catalog",
+        action="store_true",
+    )
     args = parser.parse_args()
 
     config = Config()
@@ -84,7 +89,7 @@ def cli() -> None:
             clear_dir(config.opds_dir)
         opds_catalog = lib2odps(config, config.library_dir)
         opds_catalog.export_as_xml()
-        if config.site:
+        if config.generate_site:
             opds_catalog.export_as_html()
 
 

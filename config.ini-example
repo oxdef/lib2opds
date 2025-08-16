@@ -9,6 +9,6 @@ cover_width = 500
 cover_height = 500
 cover_quality = 70
 clear_opds_dir = true
-site = false
+generate_site = false
 publication_freshness_days = 14
 cache_dir =

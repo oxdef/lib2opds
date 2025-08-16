@@ -27,7 +27,7 @@ class Config:
     cache_dir: Path | None = None
     invalidate_cache: bool = False
     index_filename: str = "index.html"
-    site: bool = False
+    generate_site: bool = False
     pages_dir: Path = field(default_factory=Path)
 
     def _update_str_field(self, field_name: str, value: str) -> None:
@@ -88,5 +88,7 @@ class Config:
             self.cache_dir = Path(args.cache_dir)
         if args.invalidate_cache:
             self.invalidate_cache = args.invalidate_cache
+        if args.generate_site:
+            self.generate_site = args.generate_site
 
         return True
