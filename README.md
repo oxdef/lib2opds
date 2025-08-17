@@ -12,6 +12,7 @@
 - Sidecar files for metadata extraction
 - Global and local configuration files as well as command line options
 - Caching for better processing of libraries with many books
+- Static site generation
 
 ## How to install
 
@@ -32,7 +33,7 @@ $ tree ./test-library/
     ├── All Systems Red.epub
     └── I, Robot - Isaac Asimov.epub
 
-$ lib2opds --opds-base-uri "/opds/" --library-base-uri "/library/" --library-dir "./test-library" --opds-dir "./output"
+$ lib2opds --opds-base-uri "/opds/" --library-base-uri "/library/" --library-dir "./test-library" --opds-dir "./output" --generate-site
 
 $ tree ./output/
 ./output/
@@ -45,6 +46,11 @@ $ tree ./output/
 │   ├── 101bcb13-37bf-4e13-a543-22c5ff3567d3.xml
 │   ├── 127ae484-af53-4056-9cff-517984321e26.xml
 │   └── db1d5760-72f5-4f23-af42-d9d6406207c9.xml
+├── pages
+│   ├── 101bcb13-37bf-4e13-a543-22c5ff3567d3.html
+│   ├── 127ae484-af53-4056-9cff-517984321e26.html
+│   └── db1d5760-72f5-4f23-af42-d9d6406207c9.html
+├── index.html
 └── index.xml
 ```
 

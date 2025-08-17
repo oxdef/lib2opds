@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ feed.get_title() }}{% endblock %}
+{% block content %}
+  {% if feed.is_root() %}
+  <ul>
+  {% for entry in feed.entries %}
+  <li>
+    {% if entry.kind == "acquisition" %}
+    <a href="{{ entry.get_link_self_href_html() }}">{{ entry.get_title() }} ({{ entry.publications | count }})</a>
+    {% else %}
+    <a href="{{ entry.get_link_self_href_html() }}">{{ entry.get_title() }}</a>
+    {% endif %}
+  </li>
+  {% endfor %}
+  </ul>
+  {% else %}
+  <ul>
+  {% for entry in feed.entries | sort(attribute="title") %}
+  <li>
+    {% if entry.kind == "acquisition" %}
+    <a href="{{ entry.get_link_self_href_html() }}">{{ entry.get_title() }} ({{ entry.publications | count }})</a>
+    {% else %}
+    <a href="{{ entry.get_link_self_href_html() }}">{{ entry.get_title() }}</a>
+    {% endif %}
+  </li>
+  {% endfor %}
+  </ul>
+  {% endif %}
+{% endblock %}

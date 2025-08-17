@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'unsafe-inline'">
+    <meta charset="utf-8">
+    {% block head %}
+    <title>{% block title %}{% endblock %}</title>
+    {% endblock %}
+    <style>
+    body {
+        padding: 1%;
+        font-size: 200%;
+    }
+    td {
+        padding: 10px;
+    }
+</style>
+</head>
+<body>
+{% block menu %}
+{% if feed.root and feed.parent %}
+<a href="{{ feed.root.get_link_self_href_html() }}">Home</a>
+<a href="{{ feed.parent.get_link_self_href_html() }}">Up</a>
+<hr>
+{% endif %}
+{% endblock %}
+    <h1>{{ self.title() }} </h1>
+    <div id="content">{% block content %}{% endblock %}</div>
+    <hr>
+    <div id="footer">Updated: {{ feed.updated }}. </div>
+</body>
+</html>
