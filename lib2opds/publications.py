@@ -41,5 +41,5 @@ class Publication:
     updated: datetime = field(default_factory=datetime.now)
 
     def __post_init__(self) -> None:
-        self._id = uuid.uuid4().urn
-        self.cover_filename = str(uuid.uuid4())
+        self._id = str(uuid.uuid4())
+        self.cover_filename = str(self._id) + ".jpg"

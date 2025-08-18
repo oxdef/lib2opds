@@ -68,6 +68,7 @@ class Config:
         self.publication_freshness_days = config["General"].getint(
             "publication_freshness_days", 14
         )
+        self.cover_quality = config["General"].getint("cover_quality", 70)
 
         if config["General"].get("cache_dir", ""):
             self.cache_dir = Path(config["General"].get("cache_dir"))
