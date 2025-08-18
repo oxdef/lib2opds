@@ -24,10 +24,12 @@ class Config:
     feed_all_publications_title: str = "All Books"
     feed_by_author_title: str = "Authors"
     feed_by_language_title: str = "Languages"
+    feed_by_issued_date: str = "Issued"
     cache_dir: Path | None = None
     invalidate_cache: bool = False
     index_filename: str = "index.html"
     generate_site: bool = False
+    generate_issued_feed: bool = True
     pages_dir: Path = field(default_factory=Path)
 
     def _update_str_field(self, field_name: str, value: str) -> None:
@@ -61,7 +63,8 @@ class Config:
         self.opds_dir = Path(config["General"].get("opds_dir"))
         self.library_dir = Path(config["General"].get("library_dir"))
         self.clear_opds_dir = config["General"].getboolean("clear_opds_dir")
-        self.site = config["General"].getboolean("site")
+        self.generate_site = config["General"].getboolean("generate_site")
+        self.generate_issued_feed = config["General"].getboolean("generate_issued_feed")
         self.publication_freshness_days = config["General"].getint(
             "publication_freshness_days", 14
         )
