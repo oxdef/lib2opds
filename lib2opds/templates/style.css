@@ -1,0 +1,11 @@
+body {
+    padding: 1%;
+    font-size: 200%;
+}
+td {
+    padding: 10px;
+}
+
+img.cover {
+    width: 100px;
+}

@@ -1,45 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
-  <id>urn:uuid:{{ feed.id }}</id>
-  <link rel="self" href="{{ feed.get_link_self_href_xml() }}" type="application/atom+xml;profile=opds-catalog;kind=acquisition"/>
+{% if feed.config.generate_site_xslt %}
+<?xml-stylesheet href="{{ feed.config.get_assets_uri() }}/navigation-feed.xsl" type="text/xsl"?>
+{% endif %}
+<atom:feed xmlns:atom="http://www.w3.org/2005/Atom">
+  <atom:id>urn:uuid:{{ feed.id }}</atom:id>
+  <atom:link rel="self" href="{{ feed.get_link_self_href_xml() }}" type="application/atom+xml;profile=opds-catalog;kind=acquisition"/>
   {% if feed.root %}
-  <link rel="start" href="{{ feed.root.get_link_self_href_xml() }}" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <atom:link rel="start" href="{{ feed.root.get_link_self_href_xml() }}" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
   {% endif %}
   {% if feed.parent %}
-  <link rel="up" href="{{ feed.parent.get_link_self_href_xml() }}" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <atom:link rel="up" href="{{ feed.parent.get_link_self_href_xml() }}" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
   {% endif %}
-
-  <title>{{ feed.get_title() }}</title>
-  <updated>{{ feed.updated }}</updated>
-  <author>
-    <name>lib2opds generator</name>
-    <uri>http://opds-spec.org</uri>
-  </author>
+  <atom:title>{{ feed.get_title() }}</atom:title>
+  <atom:updated>{{ feed.updated }}</atom:updated>
+  <atom:author>
+    <atom:name>lib2opds generator</atom:name>
+    <atom:uri>http://opds-spec.org</atom:uri>
+  </atom:author>
   {% if feed.is_root() %}
   {% for entry in feed.entries %}
-  <entry>
+  <atom:entry>
     {% if entry.kind == "acquisition" %}
-    <title>{{ entry.get_title() }} ({{ entry.publications | count }})</title>
+    <atom:title>{{ entry.get_title() }} ({{ entry.publications | count }})</atom:title>
     {% else %}
-    <title>{{ entry.get_title() }}</title>
+    <atom:title>{{ entry.get_title() }}</atom:title>
     {% endif %}
-    <link rel="subsection" href="{{ entry.get_link_self_href_xml() }}" type="application/atom+xml;profile=opds-catalog;kind={{ entry.kind }}"/>
-    <updated>{{ entry.updated }}</updated>
-    <id>urn:uuid:{{ entry.id }}</id>
-  </entry>
+    <atom:link rel="subsection" href="{{ entry.get_link_self_href_xml() }}" type="application/atom+xml;profile=opds-catalog;kind={{ entry.kind }}"/>
+    <atom:updated>{{ entry.updated }}</atom:updated>
+    <atom:id>urn:uuid:{{ entry.id }}</atom:id>
+  </atom:entry>
   {% endfor %}
   {% else %}
   {% for entry in feed.entries | sort(attribute="title") %}
-  <entry>
+  <atom:entry>
     {% if entry.kind == "acquisition" %}
-    <title>{{ entry.get_title() }} ({{ entry.publications | count }})</title>
+    <atom:title>{{ entry.get_title() }} ({{ entry.publications | count }})</atom:title>
     {% else %}
-    <title>{{ entry.get_title() }}</title>
+    <atom:title>{{ entry.get_title() }}</atom:title>
     {% endif %}
-    <link rel="subsection" href="{{ entry.get_link_self_href_xml() }}" type="application/atom+xml;profile=opds-catalog;kind={{ entry.kind }}"/>
-    <updated>{{ entry.updated }}</updated>
-    <id>urn:uuid:{{ entry.id }}</id>
-  </entry>
+    <atom:link rel="subsection" href="{{ entry.get_link_self_href_xml() }}" type="application/atom+xml;profile=opds-catalog;kind={{ entry.kind }}"/>
+    <atom:updated>{{ entry.updated }}</atom:updated>
+    <atom:id>urn:uuid:{{ entry.id }}</atom:id>
+  </atom:entry>
   {% endfor %}
   {% endif %}
-</feed>
+</atom:feed>
