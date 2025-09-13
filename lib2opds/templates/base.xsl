@@ -10,9 +10,8 @@
       <title><xsl:value-of select="/atom:feed/atom:title"/></title>
     </head>
     <body>
-    <xsl:apply-templates select="/atom:feed/atom:link[@rel='start']" /><xsl:text>  </xsl:text>
-    <xsl:apply-templates select="/atom:feed/atom:link[@rel='up']" /><xsl:text>  </xsl:text>
-      <hr />
+    <xsl:apply-templates select="/atom:feed/atom:link[@rel='start']" />
+    <xsl:apply-templates select="/atom:feed/atom:link[@rel='up']" />
       <div id="content">
       {% block content %}{% endblock %}
       </div>
@@ -26,17 +25,13 @@
     <xsl:element name="a">
       <xsl:attribute name="href">
       <xsl:value-of select="./@href"/>
-      </xsl:attribute>
-      Home
-    </xsl:element>
+      </xsl:attribute>Home</xsl:element><xsl:text> / </xsl:text>
   </xsl:template>
   <xsl:template match="/atom:feed/atom:link[@rel='up']">
     <xsl:element name="a">
       <xsl:attribute name="href">
       <xsl:value-of select="./@href"/>
-      </xsl:attribute>
-      Up
-    </xsl:element>
+      </xsl:attribute>Up</xsl:element><xsl:text>  </xsl:text>
+    <hr />
   </xsl:template>
-
 </xsl:stylesheet>

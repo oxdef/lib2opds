@@ -5,6 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from urllib.parse import urljoin
 
+
 @dataclass
 class Config:
     library_dir: Path = field(default_factory=Path)
@@ -44,7 +45,6 @@ class Config:
     def get_assets_uri(self) -> str:
         return urljoin(self.opds_base_uri, str(self.assets_dir))
 
-
     def _update_str_field(self, field_name: str, value: str) -> None:
         if hasattr(self, field_name):
             setattr(self, field_name, value)
@@ -77,7 +77,9 @@ class Config:
         self.library_dir = Path(config["General"].get("library_dir"))
         self.clear_opds_dir = config["General"].getboolean("clear_opds_dir", False)
         self.generate_site = config["General"].getboolean("generate_site", False)
-        self.generate_site_xslt = config["General"].getboolean("generate_site_xslt", False)
+        self.generate_site_xslt = config["General"].getboolean(
+            "generate_site_xslt", False
+        )
         self.publication_freshness_days = config["General"].getint(
             "publication_freshness_days", 14
         )

@@ -3,6 +3,7 @@ import os
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 from lib2opds import __version__
@@ -12,12 +13,9 @@ from lib2opds.opds import lib2odps
 CONFIG_PATH = "/etc/lib2opds.ini"
 env = Environment(loader=PackageLoader("lib2opds"), autoescape=select_autoescape())
 
-def export_assets(config:Config) -> bool:
-    assets: list[str] = [
-        "navigation-feed.xsl",
-        "acquisition-feed.xsl",
-        "style.css"
-        ]
+
+def export_assets(config: Config) -> bool:
+    assets: list[str] = ["navigation-feed.xsl", "acquisition-feed.xsl", "style.css"]
     for asset in assets:
         template = env.get_template(asset)
         data = template.render(config=config)
@@ -28,6 +26,7 @@ def export_assets(config:Config) -> bool:
             f.write(data)
 
     return True
+
 
 def clear_dir(top: Path) -> bool:
     if not top.is_dir():

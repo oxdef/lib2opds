@@ -45,18 +45,13 @@ class AtomFeed:
 
     def get_local_path_xml(self) -> Path:
         if not self.is_root():
-            return (
-                self.config.get_feeds_dir() / Path(str(self.id) + ".xml")
-            )
+            return self.config.get_feeds_dir() / Path(str(self.id) + ".xml")
         else:
             return self.config.opds_dir / self.config.root_filename
 
     def get_local_path_html(self) -> Path:
         if not self.is_root():
-            return (
-                self.config.get_pages_dir()
-                / Path(str(self.id) + ".html")
-            )
+            return self.config.get_pages_dir() / Path(str(self.id) + ".html")
         else:
             return self.config.opds_dir / self.config.index_filename
 
