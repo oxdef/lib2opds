@@ -73,8 +73,8 @@ class Config:
             if str_value := config["General"].get(str_field):
                 self._update_str_field(str_field, str_value)
 
-        self.opds_dir = Path(config["General"].get("opds_dir"))
-        self.library_dir = Path(config["General"].get("library_dir"))
+        self.opds_dir = Path(config["General"].get("opds_dir", ""))
+        self.library_dir = Path(config["General"].get("library_dir", ""))
         self.clear_opds_dir = config["General"].getboolean("clear_opds_dir", False)
         self.generate_site = config["General"].getboolean("generate_site", False)
         self.generate_site_xslt = config["General"].getboolean(
@@ -84,8 +84,8 @@ class Config:
             "publication_freshness_days", 14
         )
 
-        if config["General"].get("cache_dir", ""):
-            self.cache_dir = Path(config["General"].get("cache_dir"))
+        if cache_dir := config["General"].get("cache_dir", ""):
+            self.cache_dir = Path(cache_dir)
 
         return True
 
