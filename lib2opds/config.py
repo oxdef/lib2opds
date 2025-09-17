@@ -3,6 +3,7 @@ import configparser
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import urljoin
 
 
 @dataclass
@@ -16,7 +17,7 @@ class Config:
     cover_height: int = 500
     cover_quality: int = 70
     clear_opds_dir: bool = True
-    feeds_dir: Path = field(default_factory=Path)
+    feeds_dir: Path = Path("feeds")
     publication_freshness_days = 14
     root_filename: str = "index.xml"
     feed_by_directory_title: str = "Folders"
@@ -28,7 +29,21 @@ class Config:
     invalidate_cache: bool = False
     index_filename: str = "index.html"
     generate_site: bool = False
-    pages_dir: Path = field(default_factory=Path)
+    generate_site_xslt: bool = False
+    pages_dir: Path = Path("pages")
+    assets_dir: Path = Path("assets")
+
+    def get_feeds_dir(self) -> Path:
+        return self.opds_dir / self.feeds_dir
+
+    def get_pages_dir(self) -> Path:
+        return self.opds_dir / self.pages_dir
+
+    def get_assets_dir(self) -> Path:
+        return self.opds_dir / self.assets_dir
+
+    def get_assets_uri(self) -> str:
+        return urljoin(self.opds_base_uri, str(self.assets_dir))
 
     def _update_str_field(self, field_name: str, value: str) -> None:
         if hasattr(self, field_name):
@@ -58,16 +73,19 @@ class Config:
             if str_value := config["General"].get(str_field):
                 self._update_str_field(str_field, str_value)
 
-        self.opds_dir = Path(config["General"].get("opds_dir"))
-        self.library_dir = Path(config["General"].get("library_dir"))
-        self.clear_opds_dir = config["General"].getboolean("clear_opds_dir")
-        self.site = config["General"].getboolean("site")
+        self.opds_dir = Path(config["General"].get("opds_dir", ""))
+        self.library_dir = Path(config["General"].get("library_dir", ""))
+        self.clear_opds_dir = config["General"].getboolean("clear_opds_dir", False)
+        self.generate_site = config["General"].getboolean("generate_site", False)
+        self.generate_site_xslt = config["General"].getboolean(
+            "generate_site_xslt", False
+        )
         self.publication_freshness_days = config["General"].getint(
             "publication_freshness_days", 14
         )
 
-        if config["General"].get("cache_dir", ""):
-            self.cache_dir = Path(config["General"].get("cache_dir"))
+        if cache_dir := config["General"].get("cache_dir", ""):
+            self.cache_dir = Path(cache_dir)
 
         return True
 
