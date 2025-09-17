@@ -77,7 +77,6 @@ def dir2odps(
     last_updated = datetime.fromtimestamp(dirpath.stat().st_mtime)
     title = dirpath.name.capitalize()
 
-    feed: AtomFeed
     repo = CachingFilesystemRepository(config)
     # Directory contains other directories or empty
     if len(dirnames) > 0 or (len(dirnames) + len(filenames) == 0):
@@ -87,6 +86,7 @@ def dir2odps(
                 config, Path(d), feed, root
             )
             feed.entries.append(dir_feed)
+        return feed
     elif len(filenames) > 0:
         feed = AcquisitionFeed(config, root, parent, title)
 
@@ -98,8 +98,6 @@ def dir2odps(
         return feed
     else:
         raise Exception("Mixed dir {}".format(dirpath))
-
-    return feed
 
 
 def author_to_first_letters(author: str) -> set[str]:
