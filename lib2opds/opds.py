@@ -305,10 +305,11 @@ def lib2odps(config: Config, dirpath: Path) -> AtomFeed:
     feed_root.entries.append(feed_by_author)
 
     # By language
-    feed_by_language: NavigationFeed = get_feed_by_language(
-        config, feed_root, all_publications
-    )
-    feed_root.entries.append(feed_by_language)
+    if config.generate_languages_feed:
+        feed_by_language: NavigationFeed = get_feed_by_language(
+            config, feed_root, all_publications
+        )
+        feed_root.entries.append(feed_by_language)
 
     # By issued date
     if config.generate_issued_feed:

@@ -32,6 +32,7 @@ class Config:
     generate_site: bool = False
     generate_site_xslt: bool = False
     generate_issued_feed: bool = True
+    generate_languages_feed: bool = True
     pages_dir: Path = Path("pages")
     assets_dir: Path = Path("assets")
 
@@ -83,7 +84,10 @@ class Config:
             "generate_site_xslt", False
         )
         self.generate_issued_feed = config["General"].getboolean(
-            "generate_issued_feed", False
+            "generate_issued_feed", True
+        )
+        self.generate_languages_feed = config["General"].getboolean(
+            "generate_languages_feed", True
         )
         self.publication_freshness_days = config["General"].getint(
             "publication_freshness_days", 14
