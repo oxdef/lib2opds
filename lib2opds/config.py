@@ -25,11 +25,14 @@ class Config:
     feed_all_publications_title: str = "All Books"
     feed_by_author_title: str = "Authors"
     feed_by_language_title: str = "Languages"
+    feed_by_issued_date: str = "Issued"
     cache_dir: Path | None = None
     invalidate_cache: bool = False
     index_filename: str = "index.html"
     generate_site: bool = False
     generate_site_xslt: bool = False
+    generate_issued_feed: bool = True
+    generate_languages_feed: bool = True
     pages_dir: Path = Path("pages")
     assets_dir: Path = Path("assets")
 
@@ -80,9 +83,16 @@ class Config:
         self.generate_site_xslt = config["General"].getboolean(
             "generate_site_xslt", False
         )
+        self.generate_issued_feed = config["General"].getboolean(
+            "generate_issued_feed", True
+        )
+        self.generate_languages_feed = config["General"].getboolean(
+            "generate_languages_feed", True
+        )
         self.publication_freshness_days = config["General"].getint(
             "publication_freshness_days", 14
         )
+        self.cover_quality = config["General"].getint("cover_quality", 70)
 
         if cache_dir := config["General"].get("cache_dir", ""):
             self.cache_dir = Path(cache_dir)

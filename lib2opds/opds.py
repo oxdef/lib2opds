@@ -211,6 +211,55 @@ def get_feed_by_language(
     return result
 
 
+def convert_issued_to_datetime(issued: str) -> datetime:
+    try:
+        return datetime.fromisoformat(issued)
+    except ValueError:
+        pass
+
+    try:
+        return datetime.strptime(issued, "%Y")
+    except ValueError:
+        pass
+
+    raise ValueError
+
+
+def convert_issued_to_decade(issued: str) -> str:
+    try:
+        issued_date = convert_issued_to_datetime(issued)
+    except ValueError:
+        return "Unknow"
+    return str(issued_date.year // 10 * 10) + "s"
+
+
+def get_issued_decades_from_publications(publications: list[Publication]) -> set[str]:
+    result: set[str] = set()
+    for p in publications:
+        if p.issued:
+            result.add(convert_issued_to_decade(p.issued))
+    return result
+
+
+def get_feed_by_issued(
+    config: Config, feed_root: NavigationFeed, all_publications: list[Publication]
+) -> NavigationFeed:
+    all_issued_decades: set[str] = get_issued_decades_from_publications(all_publications)
+    result: NavigationFeed = NavigationFeed(
+        config, feed_root, feed_root, config.feed_by_issued_date
+    )
+    for issued_decade in all_issued_decades:
+        issued_publications: AcquisitionFeed = AcquisitionFeed(
+            config, feed_root, result, issued_decade
+        )
+        for p in all_publications:
+            if issued_decade == convert_issued_to_decade(p.issued):
+                issued_publications.publications.append(p)
+        result.entries.append(issued_publications)
+
+    return result
+
+
 def get_feed_new_publications(
     config: Config, feed_root: NavigationFeed, all_publications: list[Publication]
 ) -> AcquisitionFeed:
@@ -256,9 +305,17 @@ def lib2odps(config: Config, dirpath: Path) -> AtomFeed:
     feed_root.entries.append(feed_by_author)
 
     # By language
-    feed_by_language: NavigationFeed = get_feed_by_language(
-        config, feed_root, all_publications
-    )
-    feed_root.entries.append(feed_by_language)
+    if config.generate_languages_feed:
+        feed_by_language: NavigationFeed = get_feed_by_language(
+            config, feed_root, all_publications
+        )
+        feed_root.entries.append(feed_by_language)
+
+    # By issued date
+    if config.generate_issued_feed:
+        feed_by_issued: NavigationFeed = get_feed_by_issued(
+            config, feed_root, all_publications
+        )
+        feed_root.entries.append(feed_by_issued)
 
     return feed_root

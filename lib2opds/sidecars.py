@@ -58,7 +58,7 @@ class CoverSidecarFile(SidecarFile):
         if not self.cover:
             return False
         try:
-            fpath = fpath if fpath else self.fpath
+            fpath = fpath if fpath else self.fpath.with_suffix(".jpg")
             cover_quality = cover_quality if cover_quality else self.cover_quality
             if cover_width and cover_height:
                 cover = ImageOps.contain(self.cover, (cover_width, cover_height))

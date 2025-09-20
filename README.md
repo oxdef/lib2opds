@@ -5,7 +5,7 @@
 ## Features
 
 - Directory hierarchy support
-- Virtual directories: new books, authors, etc.
+- Virtual directories: new books, authors, languages, decade issued, etc.
 - ePUB format: metadata extraction, thumbnail generation
 - PDF format: metadata extraction, thumbnail generation
 - "Lazy" updating of feeds. `lib2opds` re-generates feeds only when new files are added into the library
