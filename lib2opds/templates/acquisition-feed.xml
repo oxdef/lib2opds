@@ -2,30 +2,30 @@
 {% if feed.config.generate_site_xslt %}
 <?xml-stylesheet href="{{ feed.config.get_assets_uri() }}/acquisition-feed.xsl" type="text/xsl"?>
 {% endif -%}
-<atom:feed xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/terms/" xmlns:opds="http://opds-spec.org/2010/catalog">
-  <atom:id>urn:uuid:{{ feed.id }}</atom:id>
-  <atom:link rel="self" href="{{ feed.get_link_self_href_xml() }}" type="application/atom+xml;profile=opds-catalog;kind=acquisition"/>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/terms/" xmlns:opds="http://opds-spec.org/2010/catalog">
+  <id>urn:uuid:{{ feed.id }}</id>
+  <link rel="self" href="{{ feed.get_link_self_href_xml() }}" type="application/atom+xml;profile=opds-catalog;kind=acquisition"/>
   {% if feed.root %}
-  <atom:link rel="start" href="{{ feed.root.get_link_self_href_xml() }}" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <link rel="start" href="{{ feed.root.get_link_self_href_xml() }}" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
   {% endif %}
   {% if feed.parent %}
-  <atom:link rel="up" href="{{ feed.parent.get_link_self_href_xml() }}" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <link rel="up" href="{{ feed.parent.get_link_self_href_xml() }}" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
   {% endif %}
-  <atom:title>{{ feed.get_title() }}</atom:title>
-  <atom:updated>{{ feed.updated }}</atom:updated>
-  <atom:author>
-    <atom:name>lib2opds generator</atom:name>
-    <atom:uri>http://opds-spec.org</atom:uri>
-  </atom:author>
+  <title>{{ feed.get_title() }}</title>
+  <updated>{{ feed.updated }}</updated>
+  <author>
+    <name>lib2opds generator</name>
+    <uri>http://opds-spec.org</uri>
+  </author>
   {% for publication in feed.publications  | sort(attribute="title") %}
-  <atom:entry>
-    <atom:title>{{ publication.title }}</atom:title>
-    <atom:id>urn:uuid:{{ publication._id }}</atom:id>
-    <atom:updated>{{ feed.updated }}</atom:updated>
+  <entry>
+    <title>{{ publication.title }}</title>
+    <id>urn:uuid:{{ publication._id }}</id>
+    <updated>{{ feed.updated }}</updated>
     {% for author in publication.authors %}
-    <atom:author>
-      <atom:name>{{ author }}</atom:name>
-    </atom:author>
+    <author>
+      <name>{{ author }}</name>
+    </author>
     {% endfor %}
     {% if publication.identifier %}
     <dc:identifier>{{ publication.identifier }}</dc:identifier>
@@ -40,17 +40,17 @@
     <dc:issued>{{ publication.issued }}</dc:issued>
     {% endif %}
     {% if publication.rights %}
-    <atom:rights>{{ publication.rights }}</atom:rights>
+    <rights>{{ publication.rights }}</rights>
     {% endif %}
     {% if publication.description %}
-    <atom:content type="text">{{ publication.description }}</atom:content>
+    <content type="text">{{ publication.description }}</content>
     {% endif %}
     {% if publication.cover_href %}
-    <atom:link rel="http://opds-spec.org/image" href="{{ publication.cover_href }}" type="{{ publication.cover_mimetype }}"/>
+    <link rel="http://opds-spec.org/image" href="{{ publication.cover_href }}" type="{{ publication.cover_mimetype }}"/>
     {% endif %}
     {% for link in publication.acquisition_links %}
-    <atom:link rel="http://opds-spec.org/acquisition" href="{{ link.href }}" type="{{ link.mimetype }}"/>
+    <link rel="http://opds-spec.org/acquisition" href="{{ link.href }}" type="{{ link.mimetype }}"/>
    {% endfor %}
- </atom:entry>
+ </entry>
   {% endfor %}
-</atom:feed>
+</feed>
