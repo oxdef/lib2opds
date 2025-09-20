@@ -12,7 +12,7 @@
 - Sidecar files for metadata extraction
 - Global and local configuration files as well as command line options
 - Caching for better processing of libraries with many books
-- Static site generation
+- Static site generation: with additional HTML file per feed or with client-side XSLT processing for the feed XML files (like for RSS/Atom feeds)
 
 ## How to install
 
