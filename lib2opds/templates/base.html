@@ -1,20 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'unsafe-inline'">
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'" />
+    <link rel="stylesheet" type="text/css" href="{{ feed.config.get_assets_uri() }}/style.css" />
     {% block head %}
     <title>{% block title %}{% endblock %}</title>
     {% endblock %}
-    <style>
-    body {
-        padding: 1%;
-        font-size: 200%;
-    }
-    td {
-        padding: 10px;
-    }
-</style>
 </head>
 <body>
 {% block menu %}

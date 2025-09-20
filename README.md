@@ -5,14 +5,14 @@
 ## Features
 
 - Directory hierarchy support
-- Virtual directories: new books, authors, etc.
+- Virtual directories: new books, authors, languages, decade issued, etc.
 - ePUB format: metadata extraction, thumbnail generation
 - PDF format: metadata extraction, thumbnail generation
 - "Lazy" updating of feeds. `lib2opds` re-generates feeds only when new files are added into the library
 - Sidecar files for metadata extraction
 - Global and local configuration files as well as command line options
 - Caching for better processing of libraries with many books
-- Static site generation
+- Static site generation: with additional HTML file per feed or with client-side XSLT processing for the feed XML files (like for RSS/Atom feeds)
 
 ## How to install
 

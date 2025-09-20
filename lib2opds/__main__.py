@@ -4,11 +4,28 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 
+from jinja2 import Environment, PackageLoader, select_autoescape
+
 from lib2opds import __version__
 from lib2opds.config import Config
 from lib2opds.opds import lib2odps
 
 CONFIG_PATH = "/etc/lib2opds.ini"
+env = Environment(loader=PackageLoader("lib2opds"), autoescape=select_autoescape())
+
+
+def export_assets(config: Config) -> bool:
+    assets: list[str] = ["navigation-feed.xsl", "acquisition-feed.xsl", "style.css"]
+    for asset in assets:
+        template = env.get_template(asset)
+        data = template.render(config=config)
+        local_path = config.get_assets_dir() / asset
+        local_path.parent.mkdir(parents=True, exist_ok=True)
+
+        with local_path.open(mode="w") as f:
+            f.write(data)
+
+    return True
 
 
 def clear_dir(top: Path) -> bool:
@@ -75,8 +92,6 @@ def cli() -> None:
     config.load_from_file(Path(args.config))
     config.load_from_args(args)
     opds_updated = None
-    config.feeds_dir = Path("feeds")
-    config.pages_dir = Path("pages")
     library_updated = get_utime_dir(config.library_dir)
 
     if config.opds_dir.is_dir():
@@ -89,6 +104,8 @@ def cli() -> None:
             clear_dir(config.opds_dir)
         opds_catalog = lib2odps(config, config.library_dir)
         opds_catalog.export_as_xml()
+        if config.generate_site or config.generate_site_xslt:
+            export_assets(config)
         if config.generate_site:
             opds_catalog.export_as_html()
 

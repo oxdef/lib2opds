@@ -10,6 +10,7 @@ cover_height = 500
 cover_quality = 70
 clear_opds_dir = true
 generate_site = false
+generate_site_xslt = false
 generate_issued_feed = true
 publication_freshness_days = 14
 cache_dir =
