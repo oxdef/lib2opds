@@ -33,24 +33,24 @@ $ tree ./test-library/
     ├── All Systems Red.epub
     └── I, Robot - Isaac Asimov.epub
 
-$ lib2opds --opds-base-uri "/opds/" --library-base-uri "/library/" --library-dir "./test-library" --opds-dir "./output" --generate-site
+$ lib2opds --opds-base-uri "/opds/" --library-base-uri "/library/" --library-dir "./test-library" --opds-dir "./output" --generate-site-xslt
 
 $ tree ./output/
 ./output/
 
+├── assets
+│   ├── acquisition-feed.xsl
+│   ├── navigation-feed.xsl
+│   └── style.css
 ├── covers
-│   ├── 03e1b3fe-66b2-43eb-b9f1-da72813419e2
-│   ├── 14cdd72c-680c-491c-a017-ddd0d2dbb1d2
-│   └── e01dab66-3f78-402a-9ac8-83ebc6b24f11
+│   ├── a965b65e-85f9-4e98-a02b-4ff316869a2c.jpg
+│   └── d738ea6d-f205-45e6-b09d-17d9b95c0286.jpg
 ├── feeds
-│   ├── 101bcb13-37bf-4e13-a543-22c5ff3567d3.xml
-│   ├── 127ae484-af53-4056-9cff-517984321e26.xml
-│   └── db1d5760-72f5-4f23-af42-d9d6406207c9.xml
-├── pages
-│   ├── 101bcb13-37bf-4e13-a543-22c5ff3567d3.html
-│   ├── 127ae484-af53-4056-9cff-517984321e26.html
-│   └── db1d5760-72f5-4f23-af42-d9d6406207c9.html
-├── index.html
+│   ├── 142ccd52-436c-402f-8094-524fb20af9d3.xml
+│   ├── 414562bf-c592-47f3-a94d-b01120ee22ca.xml
+│   ├── 44d48843-196b-409b-9bd9-67d928505121.xml
+...
+│   └── fab6423d-a3ea-4027-8d84-b372fbef4503.xml
 └── index.xml
 ```
 

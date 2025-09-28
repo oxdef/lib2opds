@@ -118,5 +118,7 @@ class Config:
             self.invalidate_cache = args.invalidate_cache
         if args.generate_site:
             self.generate_site = args.generate_site
+        if args.generate_site_xslt:
+            self.generate_site_xslt = args.generate_site_xslt
 
         return True

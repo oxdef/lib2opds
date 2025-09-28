@@ -13,8 +13,6 @@ from PIL import Image
 
 from lib2opds.config import Config
 from lib2opds.ebooks import (
-    EpubFile,
-    PdfFile,
     get_ebook_file_by_suffix,
     get_mimetype_by_filename,
 )
@@ -118,7 +116,7 @@ class FilesystemRepository:
                 continue
             metadata = ebook_file.get_metadata()
             cover = ebook_file.get_cover()
-            if isinstance(ebook_file, EpubFile):
+            if ebook_file.metadata_quality_score >= 0:
                 break
         return (metadata, cover)
 

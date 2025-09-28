@@ -85,6 +85,11 @@ def cli() -> None:
         help="generate static site additionally to OPDS catalog",
         action="store_true",
     )
+    parser.add_argument(
+        "--generate-site-xslt",
+        help="generate HTML output with help of XSLT client-side processing of OPDS catalog",
+        action="store_true",
+    )
     args = parser.parse_args()
 
     config = Config()
