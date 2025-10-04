@@ -101,3 +101,12 @@ identifier = urn:isbn:9781443434973
 ## Tested devices and applications
 
 The full list of devices and applications is available on [the wiki page](https://github.com/oxdef/lib2opds/wiki/Tested-devices-and-applications).
+
+## Dependenices
+
+Thanks the following projects used in Lib2OPDS:
+
+* [Jinja2](https://palletsprojects.com/p/jinja/)
+* [PyPDF](https://pypdf.readthedocs.io/en/latest/)
+* [defusedxml](https://github.com/tiran/defusedxml)
+* [Pillow](http://python-pillow.github.io/)
