@@ -1,4 +1,5 @@
 import os
+import secrets
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -246,7 +247,7 @@ def get_feed_by_issued(
 ) -> NavigationFeed:
     all_issued_decades: set[str] = get_issued_decades_from_publications(all_publications)
     result: NavigationFeed = NavigationFeed(
-        config, feed_root, feed_root, config.feed_by_issued_date
+        config, feed_root, feed_root, config.feed_by_issued_date_title
     )
     for issued_decade in all_issued_decades:
         issued_publications: AcquisitionFeed = AcquisitionFeed(
@@ -271,6 +272,16 @@ def get_feed_new_publications(
         if (datetime.now() - p.updated).days < config.publication_freshness_days:
             feed_new_publications.publications.append(p)
     return feed_new_publications
+
+
+def get_random_book_feed(
+    config: Config, feed_root: NavigationFeed, all_publications: list[Publication]
+) -> AcquisitionFeed:
+    result: AcquisitionFeed = AcquisitionFeed(
+        config, feed_root, feed_root, config.feed_random_book_title
+    )
+    result.publications.append(secrets.choice(all_publications))
+    return result
 
 
 def lib2odps(config: Config, dirpath: Path) -> AtomFeed:
@@ -317,5 +328,12 @@ def lib2odps(config: Config, dirpath: Path) -> AtomFeed:
             config, feed_root, all_publications
         )
         feed_root.entries.append(feed_by_issued)
+
+    # Random book feed
+    if config.generate_random_book_feed:
+        random_book_feed: AcquisitionFeed = get_random_book_feed(
+            config, feed_root, all_publications
+        )
+        feed_root.entries.append(random_book_feed)
 
     return feed_root
