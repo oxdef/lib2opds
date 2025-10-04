@@ -25,7 +25,8 @@ class Config:
     feed_all_publications_title: str = "All Books"
     feed_by_author_title: str = "Authors"
     feed_by_language_title: str = "Languages"
-    feed_by_issued_date: str = "Issued"
+    feed_by_issued_date_title: str = "Issued"
+    feed_random_book_title: str = "Random Book"
     cache_dir: Path | None = None
     invalidate_cache: bool = False
     index_filename: str = "index.html"
@@ -33,6 +34,7 @@ class Config:
     generate_site_xslt: bool = False
     generate_issued_feed: bool = True
     generate_languages_feed: bool = True
+    generate_random_book_feed: bool = True
     pages_dir: Path = Path("pages")
     assets_dir: Path = Path("assets")
 
@@ -88,6 +90,9 @@ class Config:
         )
         self.generate_languages_feed = config["General"].getboolean(
             "generate_languages_feed", True
+        )
+        self.generate_random_book_feed = config["General"].getboolean(
+            "generate_random_book_feed", True
         )
         self.publication_freshness_days = config["General"].getint(
             "publication_freshness_days", 14

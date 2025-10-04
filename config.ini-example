@@ -13,5 +13,6 @@ generate_site = false
 generate_site_xslt = false
 generate_issued_feed = true
 generate_languages_feed = true
+generate_random_book_feed = true
 publication_freshness_days = 14
 cache_dir =
