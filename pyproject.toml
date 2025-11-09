@@ -45,6 +45,11 @@ path = "lib2opds/__init__.py"
 [project.scripts]
 lib2opds = "lib2opds.__main__:cli"
 
+[tool.hatch.build.targets.wheel.shared-data]
+"man/lib2opds.1" = "share/man/man1/lib2opds.1"
+"man/lib2opds.ini.5" = "share/man/man5/lib2opds.ini.5"
+"man/lib2opds-sidecar-files.5" = "share/man/man5/lib2opds-sidecar-files.5"
+
 [tool.black]
 line-length = 90
 target-version = ['py311']

@@ -1,0 +1,44 @@
+.TH LIB2OPDS-SIDECAR-FILES 5
+.SH DESCRIPTION
+.BR lib2opds (1)
+detects sidecar files for the target e-book file and extracts metadata and cover from them.
+For example, in case of
+.BR some-book.epub
+e-book file lib2opds will try to check for
+.BR some-book.info
+and
+.BR some-book.cover
+files.
+.BR .cover
+is just an image file.
+.PP
+.BR .info
+sidecar files are basically INI-format files started with
+.BR [Publication]
+section.
+.PP
+The possible keys and their meanings are as follows:
+.TP
+.BR title
+title of the book
+.TP
+.BR authors
+comma-separated list of authors of the book
+.TP
+.BR description
+description of the book
+.TP
+.BR language
+language of the book
+.TP
+.BR issued
+when was the book issued?
+.TP
+.BR publisher
+What is publisher of the book
+.TP
+.BR identifier
+What is identifier of the book, e.g. ISBN
+.SH SEE ALSO
+.BR lib2opds (1),
+.BR lib2opds.ini (5)

@@ -1,0 +1,143 @@
+.TH LIB2OPDS 1
+.SH NAME
+lib2opds \- static OPDS catalog generator for ebook library
+.SH SYNOPSIS
+.SY lib2opds
+.OP options
+.OP \-\-help
+.OP \-\-version
+.YS
+.SH DESCRIPTION
+.B lib2opds
+generates OPDS catalog for local e-book library.
+Additionally, it can generate HTML output with both options: XLST client-side templating for OPDS/Atom XML output or separate HTML files generation.
+.SH OPTIONS
+.TP
+.BR \-\-help
+print a help message and exit
+.TP
+.BR \-\-version
+display version information and exit
+.TP
+.BR \-\-library-dir " "\fILIBRARY_DIR\fR
+directory with your books
+.TP
+.BR \-\-opds-dir " "\fIOPDS_DIR\fR
+target directory for OPDS feeds
+.TP
+.BR \-\-library-base-uri " "\fILIBRARY_BASE_URI\fR
+base URI for serving books from the library, for example https://your-domain.com/library
+.TP
+.BR \-\-opds-base-uri " "\fIOPDS_BASE_URI\fR
+base URI for OPDS, for example https://domain.example/opds
+.TP
+.BR \-\-library_title " "\fILIBRARY_TITLE\fR
+library title
+.TP
+.BR \-\-clear-opds-dir
+clear OPDS directory before generating result feeds
+.TP
+.BR \-\-invalidate-cache
+clear cache directory before generating result feeds
+.TP
+.BR \-\-generate-site
+generate static site additionally to OPDS catalog
+.TP
+.BR \-\-generate-site-xslt
+generate HTML output with help of XSLT client-side processing of OPDS catalog
+.TP
+.BR \-\-cache-dir " "\fICACHE_DIR\fR
+directory for caching ebook metadata
+.TP
+.BR \-c ", " \-\-config " "\fICONFIG\fR
+config path
+.TP
+.BR \-u ", " \-\-update
+force recreation of ODPS feeds
+.SH EXAMPLES
+Consider following directory with some structure and which contains ebook files:
+.PP
+.nf
+.RS
+$ tree ./test-library/
+./test-library/
+├── Linux
+│   └── How Linux Works - Brian Ward.epub
+└── Science Fiction
+    ├── All Systems Red.epub
+    └── I, Robot - Isaac Asimov.epub
+.RE
+.fi
+.PP
+Run
+.B lib2opds
+with the following options:
+.PP
+.nf
+.RS
+$ lib2opds --opds-base-uri "/opds/" --library-base-uri "/library/" --library-dir "./test-library" --opds-dir "./output" --generate-site-xslt
+.RE
+.fi
+.PP
+See the following output in the specified target directory for OPDS catalog:
+.PP
+.nf
+.RS
+$ tree ./output/
+./output/
+
+├── assets
+│   ├── acquisition-feed.xsl
+│   ├── navigation-feed.xsl
+│   └── style.css
+├── covers
+│   ├── a965b65e-85f9-4e98-a02b-4ff316869a2c.jpg
+│   └── d738ea6d-f205-45e6-b09d-17d9b95c0286.jpg
+├── feeds
+│   ├── 142ccd52-436c-402f-8094-524fb20af9d3.xml
+│   ├── 414562bf-c592-47f3-a94d-b01120ee22ca.xml
+│   ├── 44d48843-196b-409b-9bd9-67d928505121.xml
+...
+│   └── fab6423d-a3ea-4027-8d84-b372fbef4503.xml
+└── index.xml
+.RE
+.fi
+.PP
+.BR /etc/lib2opds.ini
+is used by default.
+Options specified in configuation file can be overridden via command line arguments.
+.PP
+Example of the Nginx configuration file:
+.PP
+.nf
+.RS
+location /library {
+        auth_basic  "Library Area";
+        auth_basic_user_file /etc/nginx/htpasswd;
+        alias /library-dir-path;
+}
+
+location /opds {
+        auth_basic  "Library Area";
+        auth_basic_user_file /etc/nginx/htpasswd;
+        alias /opds-dir-path;
+        index index.xml;
+}
+.RE
+.fi
+.PP
+Notice: There might be issues with some e-book reader software because of the library location protected with basic auth.
+.SH FILES
+.TP
+.BR /etc/lib2opds.ini
+Default system-wide configuration file. See
+.BR lib2opds.ini (5)
+for details on the syntax.
+.TP
+.BR "Sidecar files"
+lib2opds detects sidecar files for the target e-book file and extracts metadata and cover from them.
+.SH REPORTING BUGS
+Please use the bug tracker on https://\:github.com/\:oxdef/\:lib2opds/\:issues to report bugs and feature requests.
+.SH SEE ALSO
+.BR lib2opds.ini (5),
+.BR lib2opds-sidecar-files (5)
