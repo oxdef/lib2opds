@@ -1,0 +1,82 @@
+.TH LIB2OPDS.ini 5
+.SH NAME
+lib2opds.ini \- lib2opds configuration file
+.SH SYNOPSIS
+.SY /etc/lib2opds.ini
+.YS
+.SH DESCRIPTION
+.BR lib2opds (1)
+reads configuration options from the system-wide configuration file
+.BR /etc/lib2opds.ini
+, or the file specified with
+.BR \-c ", " \-\-config " "
+on the command  line.
+The  file is in the INI format and started with
+.BR [General]
+section.
+.PP
+The possible keys and their meanings are as follows:
+.TP
+.BR library_dir
+directory with your books
+.TP
+.BR opds_dir
+target directory for OPDS feeds
+.TP
+.BR library_base_uri
+base URI for serving books from the library, for example https://your-domain.com/library
+.TP
+.BR opds_base_uri
+base URI for OPDS, for example https://domain.example/opds
+.TP
+.BR root_filename
+root file name for the OPDS catalog, e.g. index.xml
+.TP
+.BR library_title
+title of the library, e.g. "My Library"
+.TP
+.BR cover_width
+width of cover images, e.g. 500 px
+.TP
+.BR cover_height
+height of cover images, e.g. 500 px
+.TP
+.BR cover_quality
+quality value for the result cover image file in JPEG format
+.TP
+.BR clear_opds_dir
+clear OPDS directory before generating result feeds
+.TP
+.BR generate_site
+generate static site additionally to OPDS catalog
+.TP
+.BR generate_site_xslt
+generate HTML output with help of XSLT client-side processing of OPDS catalog
+.TP
+.BR generate_issued_feed
+Should
+.B lib2opds
+generate the "Issued" feed? true/false
+.TP
+.BR generate_languages_feed
+Should
+.B lib2opds
+generate the "Languages" feed? true/false
+.BR generate_random_book_feed
+Should
+.B lib2opds
+generate the "Random" feed? true/false
+.TP
+.BR publication_freshness_days
+How many days should be from the adding of the ebook file to consider it new one, e.g. 14
+.TP
+.BR cache_dir
+directory for caching ebook metadata
+.SH FILES
+.TP
+.BR /etc/lib2opds.ini
+Default system-wide configuration file
+.SH SEE ALSO
+.BR lib2opds (1),
+.BR lib2opds-sidecar-files (5)
+
