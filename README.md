@@ -5,7 +5,7 @@
 ## Features
 
 - Directory hierarchy support
-- Virtual directories: new books, authors, languages, decade issued, etc.
+- Virtual directories/shelves: new books, authors, languages, decade issued, etc.
 - ePUB format: metadata extraction, thumbnail generation
 - PDF format: metadata extraction, thumbnail generation
 - "Lazy" updating of feeds. `lib2opds` re-generates feeds only when new files are added into the library
@@ -56,26 +56,23 @@ $ tree ./output/
 
 `/etc/lib2opds.ini` is used by default and options can be overridden via command line arguments.
 
-Example of configuration file for Nginx:
+Example of configuration file for Nginx with HTTP Basic Authentication:
 
 ```nginx
 location /library {
-        alias /library-dir;
+        auth_basic  "Library Area";
+        auth_basic_user_file /etc/nginx/htpasswd;
+        alias /library-dir-path;
 }
 
 location /opds {
         auth_basic  "Library Area";
         auth_basic_user_file /etc/nginx/htpasswd;
-        alias /opds-dir;
+        alias /opds-dir-path;
         index index.xml;
 }
-
-location /opds/covers {
-        alias /opds-dir/covers;
-}
 ```
-
-Library location here is not protected with basic auth because of the bug in some e-book reader software.
+Notice: There might be issues with some e-book reader software because of the library location protected with basic auth.
 
 ## Sidecar files
 
