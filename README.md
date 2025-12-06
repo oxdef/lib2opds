@@ -110,3 +110,4 @@ Thanks the following projects used in Lib2OPDS:
 * [PyPDF](https://pypdf.readthedocs.io/en/latest/)
 * [defusedxml](https://github.com/tiran/defusedxml)
 * [Pillow](http://python-pillow.github.io/)
+* [Mutagen](https://github.com/quodlibet/mutagen)
