@@ -1,6 +1,6 @@
 # Lib2OPDS
 
-`lib2opds` generates static [OPDS](https://opds.io/) ([version 1.2](https://specs.opds.io/opds-1.2)) catalog for local e-book library.
+`lib2opds` generates static [OPDS](https://opds.io/) ([version 1.2](https://specs.opds.io/opds-1.2)) catalog for local ebook and audiobook library.
 
 ## Features
 
@@ -8,6 +8,7 @@
 - Virtual directories/shelves: new books, authors, languages, decade issued, etc.
 - ePUB format: metadata extraction, thumbnail generation
 - PDF format: metadata extraction, thumbnail generation
+- Audiobook M4B format: metadata extraction, thumbnail generation
 - "Lazy" updating of feeds. `lib2opds` re-generates feeds only when new files are added into the library
 - Sidecar files for metadata extraction
 - Global and local configuration files as well as command line options
@@ -116,3 +117,4 @@ Thanks the following projects used in Lib2OPDS:
 * [PyPDF](https://pypdf.readthedocs.io/en/latest/)
 * [defusedxml](https://github.com/tiran/defusedxml)
 * [Pillow](http://python-pillow.github.io/)
+* [Mutagen](https://github.com/quodlibet/mutagen)
