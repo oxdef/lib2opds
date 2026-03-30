@@ -5,7 +5,7 @@
 ## Features
 
 - Directory hierarchy support
-- Virtual directories: new books, authors, languages, decade issued, etc.
+- Virtual directories/shelves: new books, authors, languages, decade issued, etc.
 - ePUB format: metadata extraction, thumbnail generation
 - PDF format: metadata extraction, thumbnail generation
 - Audiobook M4B format: metadata extraction, thumbnail generation
@@ -19,13 +19,18 @@
 
 `lib2opds` is distributed on PyPI. The best way to install it is with [pipx](https://pipx.pypa.io).
 
-```
-pipx install lib2opds
+```shell
+$ pipx install lib2opds
 ```
 
 ## How to use
 
+Please read the manual frist:
+```shell
+$ man lib2opds
 ```
+Let's consider the following library directory:
+```shell
 $ tree ./test-library/
 ./test-library/
 ├── Linux
@@ -33,9 +38,13 @@ $ tree ./test-library/
 └── Science Fiction
     ├── All Systems Red.epub
     └── I, Robot - Isaac Asimov.epub
-
+```
+Generate OPDS catalog and complimenting HTML site for the library directory: 
+```shell
 $ lib2opds --opds-base-uri "/opds/" --library-base-uri "/library/" --library-dir "./test-library" --opds-dir "./output" --generate-site-xslt
-
+```
+Get the following result:
+```shell
 $ tree ./output/
 ./output/
 
@@ -55,28 +64,25 @@ $ tree ./output/
 └── index.xml
 ```
 
-`/etc/lib2opds.ini` is used by default and options can be overridden via command line arguments.
+`/etc/lib2opds.ini` is used by default and options can be overridden via command line arguments. See `$ man 5 lib2opds.ini` for more details.
 
-Example of configuration file for Nginx:
+Now it is possible to serve it with any HTTP server. Example of configuration file for Nginx with HTTP Basic Authentication:
 
 ```nginx
 location /library {
-        alias /library-dir;
+        auth_basic  "Library Area";
+        auth_basic_user_file /etc/nginx/htpasswd;
+        alias /library-dir-path;
 }
 
 location /opds {
         auth_basic  "Library Area";
         auth_basic_user_file /etc/nginx/htpasswd;
-        alias /opds-dir;
+        alias /opds-dir-path;
         index index.xml;
 }
-
-location /opds/covers {
-        alias /opds-dir/covers;
-}
 ```
-
-Library location here is not protected with basic auth because of the bug in some e-book reader software.
+Notice: There might be issues with some e-book reader software because of the library location protected with basic auth.
 
 ## Sidecar files
 
