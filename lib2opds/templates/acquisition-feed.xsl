@@ -1,7 +1,6 @@
 {% extends "base.xsl" %}
 {% block content %}
-        <h1><xsl:value-of select="/atom:feed/atom:title"/></h1>
-        <table>
+        <table id="books">
           <xsl:apply-templates select="/atom:feed/atom:entry" />
         </table>
 {% endblock %}
@@ -10,7 +9,10 @@
     <tr><td><xsl:apply-templates select="atom:link[@rel='http://opds-spec.org/image']" /></td>
     <td>
       <strong><xsl:value-of select="atom:title"/></strong><br />
-      <xsl:apply-templates select="atom:author" />
+      <xsl:apply-templates select="atom:author" /><br />
+      <xsl:if test="normalize-space(atom:content)">
+        <details><summary>Details</summary><xsl:value-of select="atom:content"/></details>
+      </xsl:if>
     </td>
     <td><xsl:apply-templates select="atom:link[@rel='http://opds-spec.org/acquisition']" /></td>
     </tr>

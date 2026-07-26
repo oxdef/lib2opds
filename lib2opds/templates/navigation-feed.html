@@ -2,7 +2,7 @@
 {% block title %}{{ feed.get_title() }}{% endblock %}
 {% block content %}
   {% if feed.is_root() %}
-  <ul>
+  <ul id="directories">
   {% for entry in feed.entries %}
   <li>
     {% if entry.kind == "acquisition" %}
