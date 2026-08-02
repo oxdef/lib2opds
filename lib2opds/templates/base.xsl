@@ -10,13 +10,15 @@
       <title><xsl:value-of select="/atom:feed/atom:title"/></title>
     </head>
     <body>
+    <div id="header">
     <xsl:apply-templates select="/atom:feed/atom:link[@rel='start']" />
     <xsl:apply-templates select="/atom:feed/atom:link[@rel='up']" />
+    <xsl:value-of select="/atom:feed/atom:title"/>
+    </div>
       <div id="content">
       {% block content %}{% endblock %}
       </div>
-      <hr />
-      <div id="footer">Updated: <xsl:value-of select="/atom:feed/atom:updated"/>.</div>
+      <div id="footer">&#8635; <xsl:value-of select="translate(/atom:feed/atom:updated, 'T', ' ')"/></div>
     </body>
   </html>
   </xsl:template>
@@ -25,13 +27,12 @@
     <xsl:element name="a">
       <xsl:attribute name="href">
       <xsl:value-of select="./@href"/>
-      </xsl:attribute>Home</xsl:element><xsl:text> / </xsl:text>
+      </xsl:attribute>{{ config.library_title }}</xsl:element><xsl:text> </xsl:text>
   </xsl:template>
   <xsl:template match="/atom:feed/atom:link[@rel='up']">
     <xsl:element name="a">
       <xsl:attribute name="href">
       <xsl:value-of select="./@href"/>
-      </xsl:attribute>Up</xsl:element><xsl:text>  </xsl:text>
-    <hr />
+      </xsl:attribute>/../</xsl:element><xsl:text> </xsl:text>
   </xsl:template>
 </xsl:stylesheet>

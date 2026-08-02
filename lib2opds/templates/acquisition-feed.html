@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ feed.get_title() }}{% endblock %}
 {% block content %}
-  <table>
+  <table id="books">
   {% for publication in feed.publications  | sort(attribute="title") %}
   <tr>
     <td>
@@ -10,7 +10,10 @@
     {% endif %}
     </td>
     <td><strong>{{ publication.title }}</strong><br />
-    {{ publication.authors | join(', ') }}
+    {{ publication.authors | join(', ') }}<br />
+    {% if publication.description %}
+    <details><summary>Details</summary>{{ publication.description }}</details>
+    {% endif %}
     </td>
     <td>
     {% for link in publication.acquisition_links %}

@@ -1,7 +1,6 @@
 {% extends "base.xsl" %}
 {% block content %}
-        <h1><xsl:value-of select="/atom:feed/atom:title"/></h1>
-        <ul>
+        <ul id="directories">
           <xsl:apply-templates select="/atom:feed/atom:entry" />
         </ul>
 {% endblock %}

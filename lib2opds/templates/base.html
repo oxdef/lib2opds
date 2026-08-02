@@ -10,15 +10,13 @@
 </head>
 <body>
 {% block menu %}
-{% if feed.root and feed.parent %}
-<a href="{{ feed.root.get_link_self_href_html() }}">Home</a>
-<a href="{{ feed.parent.get_link_self_href_html() }}">Up</a>
-<hr>
-{% endif %}
+    <div id="header">
+    {% if feed.root %}<a href="{{ feed.root.get_link_self_href_html() }}">{{ feed.config.library_title }}</a>{% endif %}
+    {% if feed.parent %}<a href="{{ feed.parent.get_link_self_href_html() }}">/../</a>{% endif %}
+    {{ self.title() }}
 {% endblock %}
-    <h1>{{ self.title() }} </h1>
+    </div>
     <div id="content">{% block content %}{% endblock %}</div>
-    <hr>
-    <div id="footer">Updated: {{ feed.updated }}. </div>
+    <div id="footer">&orarr; {{ feed.updated | replace('T', ' ') }}</div>
 </body>
 </html>
