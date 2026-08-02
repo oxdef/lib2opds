@@ -1,4 +1,4 @@
-# Lib2OPDS
+# Migrated to [codeberg.org/oxdef/lib2opds](https://codeberg.org/oxdef/lib2opds)
 
 `lib2opds` generates static [OPDS](https://opds.io/) ([version 1.2](https://specs.opds.io/opds-1.2)) catalog for local ebook and audiobook library.
 
